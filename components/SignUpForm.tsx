@@ -42,7 +42,7 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
       if (!response.ok) {
         throw new Error(result.error || 'Something went wrong')
       }
-      
+
       router.push('/dashboard')
       
     } catch (error) {
@@ -95,7 +95,8 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
               <>
                 <div>
                   <h4>First Name</h4>
-                  <input 
+                  <input
+                    placeholder="John" 
                     type="text" 
                     {...register('firstName', { required: mode === 'signup' })}
                     className="w-full" 
@@ -108,6 +109,7 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
                 <div>
                   <h4>Last Name</h4>
                   <input 
+                    placeholder="Doe"
                     type="text" 
                     {...register('lastName')}
                     className="w-full" 
@@ -119,6 +121,7 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
             <div className="col-span-2">
               <h4>Email</h4>
               <input 
+                placeholder="john@orris.com"
                 type="text" 
                 {...register('email', { 
                   required: 'Email is required',
@@ -137,6 +140,7 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
             <div className="col-span-2">
               <h4>Password</h4>
               <input 
+                placeholder="********"
                 type="password" 
                 {...register('password', { 
                   required: 'Password is required',
