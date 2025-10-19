@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prismadb from '@/lib/prismaDB';
-import { tiptapToText, extractTitle, isValidTiptapContent, getEmptyContent } from '@/lib/tiptap-utils';
+import { tiptapToText, extractTitle, isValidTiptapContent, getEmptyContent } from '@/lib/tiptapUtils';
 import { verifyJwt } from '@/lib/jwt';
 import logger from '@/lib/logger';
 

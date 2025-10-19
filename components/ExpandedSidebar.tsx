@@ -1,5 +1,7 @@
-import { ChevronDown, ChevronRight, Edit2, FolderOpen, GripVertical, MoreVertical, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Edit2, GripVertical, MoreVertical, Plus, Trash2 } from "lucide-react";
 import ColorPicker from "./ColorPicker";
+import { FolderOpenIcon } from "./ui/FolderOpenIcon";
+import { FolderIcon } from "./ui/FolderIcon";
 
 export const ExpandedSidebar = ({ 
   showColorPicker, 
@@ -127,6 +129,7 @@ export const ExpandedSidebar = ({
                       ${draggedItem?.id === folder.id && draggedItem?.type === 'folder' && 'opacity-50'}
                       ${activeMenu === `folder-${folder.id}` && 'bg-accent/30'}`}
                   >
+                    <GripVertical className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
@@ -140,8 +143,23 @@ export const ExpandedSidebar = ({
                         <ChevronRight className="w-4 h-4" />
                       )}
                     </button>
-                    <GripVertical className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
-                    <FolderOpen className="w-4 h-4 text-primary" />
+                    <div className="relative w-4 h-4 text-primary">
+                      <FolderIcon
+                        className={`
+                          absolute inset-0 w-4 h-4 
+                          transition-all duration-300 ease-in-out
+                          ${expandedFolders[folder.id] ? 'opacity-0 scale-75' : 'opacity-100 scale-100 z-10'}
+                        `}
+                      />
+                      <FolderOpenIcon
+                        isExpanded={expandedFolders[folder.id]}
+                        className={`
+                          absolute inset-0 w-4 h-4 
+                          transition-all duration-300 ease-in-out
+                          ${expandedFolders[folder.id] ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-75'}
+                        `}
+                      />
+                    </div>
                     <span className="text-xs text-foreground flex-1">{folder.name}</span>
                     <span className="text-xs text-muted-foreground">{folder.notes.length}</span>
                     <button 
