@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import prismadb from '@/lib/prismaDB';
 import { tiptapToText, extractTitle, isValidTiptapContent, getEmptyContent } from '@/lib/tiptap-utils';
 import { verifyJwt } from '@/lib/jwt';
+import logger from '@/lib/logger';
 
 export async function GET(req: NextRequest) {
   try {
     const token = req.cookies.get("token")?.value;
     if (!token) {
+      logger.warn("Unauthorized request to /api/notes");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -16,6 +18,8 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const folderId = searchParams.get("folderId");
     const search = searchParams.get("search");
+
+    logger.info({ userId, folderId, search }, "Fetching notes");
 
     const notes = await prismadb.note.findMany({
       where: {
@@ -72,9 +76,11 @@ export async function GET(req: NextRequest) {
       tags: note.noteTags.map((nt) => nt.tag),
     }));
 
+    logger.info({ userId, count: formattedNotes.length }, "Fetched notes successfully");
+
     return NextResponse.json(formattedNotes);
   } catch (error) {
-    console.error("Error fetching notes:", error);
+    logger.error({ error }, "Error fetching notes");
     return NextResponse.json({ error: "Failed to fetch notes" }, { status: 500 });
   }
 }
@@ -83,6 +89,7 @@ export async function POST(req: NextRequest) {
   try {
     const token = req.cookies.get("token")?.value;
     if (!token) {
+      logger.warn("Unauthorized request to POST /api/notes");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -90,13 +97,13 @@ export async function POST(req: NextRequest) {
     const userId = decoded.userId;
 
     const { folderId, color, content, imageURLs, tagNames } = await req.json();
+    logger.info({ userId, folderId }, "Creating new note");
 
     const noteContent = content && isValidTiptapContent(content) ? content : getEmptyContent();
-    
     const title = extractTitle(noteContent);
     const plainText = tiptapToText(noteContent);
 
-    let connectTags: {tagId: number}[] = [];
+    let connectTags: { tagId: number }[] = [];
     if (Array.isArray(tagNames) && tagNames.length > 0) {
       connectTags = await Promise.all(
         tagNames.map(async (name: string) => {
@@ -137,12 +144,14 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    logger.info({ userId, noteId: note.id }, "Note created successfully");
+
     return NextResponse.json({
       ...note,
       tags: note.noteTags.map((nt) => nt.tag),
     });
   } catch (error) {
-    console.error("Error creating note:", error);
+    logger.error({ error }, "Error creating note");
     const message = error instanceof Error && error.message === "Unauthorized" ? "Unauthorized" : "Failed to create note";
     return NextResponse.json(
       { error: message },

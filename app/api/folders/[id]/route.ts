@@ -1,20 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import prismadb from "@/lib/prismaDB";
 import { verifyJwt } from "@/lib/jwt";
+import logger from "@/lib/logger";
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const startTime = Date.now();
   try {
     const token = req.cookies.get("token")?.value;
-    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!token) {
+      logger.warn("Unauthorized PATCH attempt to folder");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const decoded = verifyJwt(token);
     const userId = decoded.userId;
 
     const folderId = parseInt(params.id);
     if (Number.isNaN(folderId)) {
+      logger.warn({ userId, folderId }, "Invalid folder id");
       return NextResponse.json({ error: "Invalid folder id" }, { status: 400 });
     }
 
@@ -26,6 +32,7 @@ export async function PATCH(
     });
 
     if (!existingFolder || existingFolder.userId !== userId) {
+      logger.warn({ userId, folderId }, "Folder not found or unauthorized access");
       return NextResponse.json({ error: "Folder not found or unauthorized" }, { status: 404 });
     }
 
@@ -35,6 +42,7 @@ export async function PATCH(
         where: { id: folderId, userId },
         data: { ...(name ? { name: name.trim() } : {}) },
       });
+      logger.info({ userId, folderId }, "Folder updated without order change");
       return NextResponse.json(updated);
     }
 
@@ -54,13 +62,13 @@ export async function PATCH(
         where: { id: folderId },
         data: { ...(name ? { name: name.trim() } : {}) },
       });
+      logger.info({ userId, folderId }, "Folder updated with name only, order unchanged");
       return NextResponse.json(updated);
     }
 
     const updatedFolder = await prismadb.$transaction(async (tx) => {
       const direction = newOrder > currentOrder ? "down" : "up";
       if (direction === "down") {
-        // move down: shift intervening folders up (decrement their order by 1)
         await tx.folder.updateMany({
           where: {
             userId,
@@ -69,7 +77,6 @@ export async function PATCH(
           data: { order: { decrement: 1 } },
         });
       } else {
-        // move up: shift intervening folders down (increment their order by 1)
         await tx.folder.updateMany({
           where: {
             userId,
@@ -90,24 +97,31 @@ export async function PATCH(
       return updated;
     });
 
+    logger.info({ userId, folderId, currentOrder, newOrder }, "Folder reordered successfully");
+    logger.debug({ elapsedMs: Date.now() - startTime }, "PATCH folder execution time");
     return NextResponse.json(updatedFolder);
   } catch (err) {
-    console.error("Error updating folder:", err);
+    logger.error({ error: err }, "Error updating folder");
     return NextResponse.json({ error: "Failed to update folder" }, { status: 500 });
   }
 }
 
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const startTime = Date.now();
   try {
     const token = req.cookies.get("token")?.value;
-    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!token) {
+      logger.warn("Unauthorized DELETE attempt to folder");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const decoded = verifyJwt(token);
     const userId = decoded.userId;
 
     const folderId = parseInt(params.id);
     if (isNaN(folderId)) {
+      logger.warn({ userId, folderId }, "Invalid folder ID for delete");
       return NextResponse.json({ error: "Invalid folder ID" }, { status: 400 });
     }
 
@@ -116,6 +130,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     });
 
     if (!folder) {
+      logger.warn({ userId, folderId }, "Folder not found for deletion");
       return NextResponse.json({ error: "Folder not found" }, { status: 404 });
     }
 
@@ -131,9 +146,11 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       });
     });
 
+    logger.info({ userId, folderId }, "Folder deleted successfully");
+    logger.debug({ elapsedMs: Date.now() - startTime }, "DELETE folder execution time");
     return NextResponse.json({ message: "Folder deleted successfully" });
   } catch (error) {
-    console.error("Error deleting folder:", error);
+    logger.error({ error }, "Error deleting folder");
     return NextResponse.json({ error: "Failed to delete folder" }, { status: 500 });
   }
 }
