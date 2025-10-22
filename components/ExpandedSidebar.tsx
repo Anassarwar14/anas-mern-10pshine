@@ -13,6 +13,7 @@ export const ExpandedSidebar = ({
   toggleFolder,
   activeMenu,
   toggleMenu,
+  menuRef,
 
   onDragStart,
   onDragOver,
@@ -75,6 +76,7 @@ export const ExpandedSidebar = ({
                   <div className={`w-3 h-3 ${note.color} rounded-sm border border-border flex-shrink-0`}></div>
                   <span className="text-xs text-foreground flex-1 truncate">{note.title}</span>
                   <button 
+                    ref={menuRef}
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleMenu(`quick-${note.id}`);
@@ -162,7 +164,7 @@ export const ExpandedSidebar = ({
                     </div>
                     <span className="text-xs text-foreground flex-1">{folder.name}</span>
                     <span className="text-xs text-muted-foreground">{folder.notes.length}</span>
-                    <button 
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleMenu(`folder-${folder.id}`);
@@ -173,8 +175,8 @@ export const ExpandedSidebar = ({
                     </button>
                     
                     {activeMenu === `folder-${folder.id}` && (
-                      <div className="absolute right-0 translate-x-25 translate-y-7 bg-card border border-border rounded-lg shadow-xl p-1 z-30 animate-in slide-in-from-left-5">
-                        <button className="border-b border-border/50 flex items-center gap-2 w-full px-3 py-1.5 hover:bg-accent/30 rounded text-xs text-foreground whitespace-nowrap cursor-pointer">
+                      <div ref={menuRef} className="absolute right-0 translate-x-25 translate-y-7 bg-card border border-border rounded-lg shadow-xl p-1 z-30 animate-in slide-in-from-left-5">
+                        <button onClick={() => handleNewNote("", folder.id)} className="border-b border-border/50 flex items-center gap-2 w-full px-3 py-1.5 hover:bg-accent/30 rounded text-xs text-foreground whitespace-nowrap cursor-pointer">
                           <Plus className="w-3 h-3" />
                           New Note
                         </button>
@@ -218,7 +220,7 @@ export const ExpandedSidebar = ({
                           </button>
                           
                           {activeMenu === `note-${note.id}` && (
-                            <div className="absolute right-0 translate-x-23 translate-y-4 bg-card border border-border rounded-lg shadow-xl p-1 z-30 animate-in slide-in-from-left-5">
+                            <div ref={menuRef} className="absolute right-0 translate-x-23 translate-y-4 bg-card border border-border rounded-lg shadow-xl p-1 z-30 animate-in slide-in-from-left-5">
                               <button className="flex items-center gap-2 w-full px-3 py-1.5 hover:bg-accent rounded text-xs text-foreground cursor-pointer">
                                 <Edit2 className="w-3 h-3" />
                                 Edit

@@ -56,7 +56,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
         <div className="w-full relative z-20">
           <button
             onClick={() => setShowColorPicker(!showColorPicker)}
-            className="w-full flex items-center justify-center p-3 rounded-full hover:bg-rose-600 bg-black text-primary-foreground cursor-pointer transition-all shadow-md hover:shadow-lg font-medium group duration-300 active:scale-95"
+            className="w-full flex items-center justify-center p-3 rounded-full hover:bg-rose-600 bg-black text-white cursor-pointer transition-all shadow-md hover:shadow-lg font-medium group duration-300 active:scale-95"
           >
             <Plus
               className={`${

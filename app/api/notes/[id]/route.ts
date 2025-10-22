@@ -5,6 +5,67 @@ import { extractTitle, getEmptyContent, isValidTiptapContent, tiptapToText } fro
 import logger from "@/lib/logger";
 import isEqual from "lodash/isEqual";
 
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const token = req.cookies.get("token")?.value;
+    if (!token) {
+      logger.warn("Unauthorized request to /api/notes/[id]");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const decoded = verifyJwt(token);
+    const userId = decoded.userId;
+    const noteId = parseInt(params.id);
+
+    logger.info({ userId, noteId }, "Fetching single note");
+
+    const note = await prismadb.note.findFirst({
+      where: {
+        id: noteId,
+        userId,
+      },
+      select: {
+        title: true,
+        content: true,
+        color: true,
+        folderId: true,
+        isPinned: true,
+        isFavorite: true,
+        isArchived: true,
+        noteTags: {
+          select: {
+            tag: {
+              select: { id: true, name: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!note) {
+      logger.warn({ userId, noteId }, "Note not found");
+      return NextResponse.json({ error: "Note not found" }, { status: 404 });
+    }
+
+    const formattedNote = {
+      ...note,
+      tags: note.noteTags.map((nt) => nt.tag),
+    };
+
+    logger.info({ userId, noteId }, "Fetched note successfully");
+
+    return NextResponse.json(formattedNote);
+  } catch (error) {
+    logger.error({ error }, "Error fetching single note");
+    return NextResponse.json({ error: "Failed to fetch note" }, { status: 500 });
+  }
+}
+
+
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const startTime = Date.now();
 

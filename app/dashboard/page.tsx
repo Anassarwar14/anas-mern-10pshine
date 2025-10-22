@@ -6,21 +6,7 @@ import { StickyNote } from "lucide-react";
 const Dashboard = () => {
 
   return (
-    <div className="flex h-screen">
-      <Sidebar />
-      <div style={{ width: '100%', height: '600px', position: 'absolute', opacity: '100%', zIndex:"-5"}}>
-        <DotGrid
-          dotSize={3}
-          gap={15}
-          baseColor="#E2E2E8"
-          activeColor="#ec003f"
-          proximity={120}
-          shockRadius={250}
-          shockStrength={5}
-          resistance={750}
-          returnDuration={1.5}
-        />
-      </div>
+    <>
       <div className="flex-1 p-8 overflow-auto">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-foreground mb-2">Welcome to Your Notes</h2>
@@ -38,7 +24,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

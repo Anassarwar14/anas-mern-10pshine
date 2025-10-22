@@ -6,11 +6,13 @@ const CollapsedSidebar = ({ showColorPicker, setShowColorPicker, handleNewNote }
   return (
         <>
             <div className="flex flex-col items-center gap-4">
-                <ColorPicker
-                    showColorPicker={showColorPicker}
-                    setShowColorPicker={setShowColorPicker}
-                    handleNewNote={handleNewNote}
-                />
+                <div className="px-20">
+                    <ColorPicker
+                        showColorPicker={showColorPicker}
+                        setShowColorPicker={setShowColorPicker}
+                        handleNewNote={handleNewNote}
+                    />
+                </div>
                 <button className="p-2 hover:bg-accent rounded-lg transition-colors" title="Starred">
                     <Star className="w-5 h-5 text-yellow-500" />
                 </button>

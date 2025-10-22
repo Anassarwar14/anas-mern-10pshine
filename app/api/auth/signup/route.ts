@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import prismadb from "@/lib/prismaDB";
 import logger from "@/lib/logger";
+import { signJwt } from "@/lib/jwt";
 
 
 function generateUsername(firstName: string) {
@@ -27,8 +28,15 @@ export async function POST(req: Request) {
         })
 
         logger.info({userId: user.id}, 'User signed up!')
-        return NextResponse.json({ message: "User created" }, { status: 201 })
-
+        
+        const token = signJwt({userId: user.id});
+        
+        logger.info({ userId: user.id }, "User signed in");
+        
+        const res = NextResponse.json({message: "User created and login successful!"}, { status: 201 })
+        res.cookies.set("token", token, { httpOnly: true, path: "/", maxAge: 60*60*24*7 });
+        return res;
+        
     } catch (error: any) {
         logger.error({ error: error.message }, "Signup error");
         return NextResponse.json({ error: "Signup failed!" }, {status: 500})

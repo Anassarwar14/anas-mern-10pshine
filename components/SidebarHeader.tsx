@@ -27,9 +27,9 @@ export const SidebarHeader = ({ sidebarCollapsed, setSidebarCollapsed }: Sidebar
             className="p-2 hover:bg-accent/40 rounded-lg transition-colors cursor-pointer"
         >
             {sidebarCollapsed ? 
-            <Menu className="w-5 h-5 text-foreground" />
+            <Menu className="w-5 h-5 text-gray-800" />
             :
-            <ChevronsLeft className="w-5 h-5 text-foreground" />
+            <ChevronsLeft className="w-5 h-5 text-gray-800" />
             }
         </button>
         </div>

@@ -1,11 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SidebarHeader } from "./SidebarHeader";
 import { ExpandedSidebar } from "./ExpandedSidebar";
 import CollapsedSidebar from "./CollapsedSidebar";
+import { useRouter } from "next/navigation";
+import LogOutButton from "./LogOutButton";
 
 export const Sidebar = () => {
+  const router = useRouter();
   const [expandedFolders, setExpandedFolders] = useState<Record<number, boolean>>({});
   const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -13,7 +16,7 @@ export const Sidebar = () => {
   const [myNotesExpanded, setMyNotesExpanded] = useState<boolean>(true);
   const [foldersExpanded, setFoldersExpanded] = useState<boolean>(true);
   const [draggedItem, setDraggedItem] = useState<any>(null);
-  
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const colors = [
     { name: "Blush Pink", value: "#F7A8B8" },
     { name: "Soft Mint", value: "#A8E6CF" },
@@ -56,25 +59,29 @@ export const Sidebar = () => {
 
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (activeMenu) {
-        setActiveMenu(null);
-      }
-    };
-
-    if (activeMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
+  const handleClickOutside = (event: MouseEvent) => {
+    // only close if click happened outside the menu
+    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      setActiveMenu(null);
     }
+  };
 
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [activeMenu]);
+  if (activeMenu) {
+    document.addEventListener("mousedown", handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [activeMenu]);
 
 
-  const handleNewNote = (color: string) => {
+  const handleNewNote = (color?: string, folderId?: number) => {
     setShowColorPicker(false);
-    // further logic to be implemented
+    const params = new URLSearchParams();
+    if (color) params.set("color", color);
+    if (folderId) params.set("folderId", String(folderId));
+    router.push(`/dashboard/new${params.toString() ? `?${params}` : ""}`);
   };
 
   const toggleMenu = (id: string) => {
@@ -248,6 +255,7 @@ export const Sidebar = () => {
             toggleFolder={toggleFolder}
             activeMenu={activeMenu}
             toggleMenu={toggleMenu}
+            menuRef={menuRef}
             onDragStart={handleDragStart}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
@@ -278,6 +286,8 @@ export const Sidebar = () => {
           </div>
         </div>
       )}
+
+      <LogOutButton />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearchPostgres"]
 }
 
@@ -9,52 +9,43 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-
 model User {
-  id          Int     @id @default(autoincrement())
-  username    String  @unique
-  email       String  @unique
-  password    String
-  firstName   String
-  lastName    String?
-  bio         String?
-  avatarUrl   String?
-
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String?
+  bio       String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   folders   Folder[]
   notes     Note[]
   tags      Tag[]    @relation("UserTags")
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
   @@map("users")
 }
 
-
 model Note {
-  id          Int      @id @default(autoincrement())
-  userId      Int      @map("user_id")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  folderId    Int?     @map("folder_id")
-  folder      Folder?  @relation(fields: [folderId], references: [id], onDelete: SetNull)
-  
-  title       String   @default("Untitled")
-  
-  content     Json     @default("{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\"}]}")
-  plainText   String?  @map("content_plain_text") @db.Text
+  id         Int       @id @default(autoincrement())
+  userId     Int       @map("user_id")
+  folderId   Int?      @map("folder_id")
+  title      String    @default("Untitled")
+  content    Json      @default("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\"}]}")
+  plainText  String?   @map("content_plain_text")
+  color      String    @default("#FFE6A7")
+  order      Int       @default(0)
+  isPinned   Boolean   @default(false) @map("is_pinned")
+  isFavorite Boolean   @default(false) @map("is_favorite")
+  isArchived Boolean   @default(false) @map("is_archived")
+  imageURLs  String[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  noteTags   NoteTag[]
+  folder     Folder?   @relation(fields: [folderId], references: [id])
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  color       String   @default("#FFE6A7")
-  order       Int      @default(0)
-  
-  isPinned    Boolean  @default(false) @map("is_pinned")
-  isFavorite  Boolean  @default(false) @map("is_favorite")
-  isArchived  Boolean  @default(false) @map("is_archived")
-  noteTags    NoteTag[] // junction for many-to-many tags
-  imageURLs   String[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
   @@index([userId, folderId, order])
   @@index([userId, order])
   @@map("notes")
@@ -63,24 +54,23 @@ model Note {
 model Folder {
   id        Int      @id @default(autoincrement())
   userId    Int      @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   name      String
   order     Int      @default(0)
-  notes     Note[]
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes     Note[]
+
   @@index([userId, order])
   @@map("folders")
 }
 
 model Tag {
-  id        Int         @id @default(autoincrement())
-  name      String      @unique
-  userId    Int?        // null means predefined
-  user      User?       @relation("UserTags", fields: [userId], references: [id])
-  noteTags  NoteTag[]
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  userId   Int?
+  noteTags NoteTag[]
+  user     User?     @relation("UserTags", fields: [userId], references: [id])
 
   @@map("tags")
 }
