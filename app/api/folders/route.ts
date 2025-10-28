@@ -18,11 +18,19 @@ export async function GET(req: NextRequest) {
 
     const folders = await prismadb.folder.findMany({
       where: { userId },
-      orderBy: { order: "asc" },
       include: {
-        _count: { select: { notes: true } },
-      },
+            notes: {
+              orderBy: { updatedAt: "desc" },
+            },
+          },
+          orderBy: { createdAt: "desc" },
     });
+  
+      //   orderBy: { order: "asc" },
+    //   include: {
+    //     _count: { select: { notes: true } },
+    //   },
+    // });
 
     logger.info({ userId, count: folders.length }, "Fetched folders successfully");
 

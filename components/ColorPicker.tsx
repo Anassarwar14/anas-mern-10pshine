@@ -12,12 +12,13 @@ interface ColorPickerProps {
 }
 
 const defaultColors: Color[] = [
-  { id: 1, color: '#F6B44B', name: 'Gold' },
-  { id: 2, color: '#F9936B', name: 'Coral' },
-  { id: 3, color: '#A78BFA', name: 'Lavender' },
-  { id: 4, color: '#22D3EE', name: 'Cyan' },
-  { id: 5, color: '#A3E635', name: 'Lime' },
+  { id: 1, color: '#FFE28A', name: 'Soft Gold' },     // warm + cheerful
+  { id: 2, color: '#FFB5A7', name: 'Peach Coral' },   // friendly + comforting
+  { id: 3, color: '#CDB4DB', name: 'Lilac Mist' },    // calm + creative
+  { id: 4, color: '#A0E7E5', name: 'Aqua Glow' },     // fresh + modern
+  { id: 5, color: '#B9FBC0', name: 'Mint Leaf' },     // natural + balanced
 ];
+
 
 const ColorPicker: React.FC<ColorPickerProps> = ({
   colors = defaultColors,

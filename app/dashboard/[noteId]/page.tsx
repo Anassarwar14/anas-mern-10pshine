@@ -3,16 +3,17 @@ import { cookies } from "next/headers"
 
 
 interface NotePageProps {
-  params: { noteId: string }
-  searchParams?: { [key: string]: string | string[] | undefined }
+  params: Promise<{ noteId: string }>  // Changed to Promise
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }> 
 }
 
 export default async function NotePage({ params, searchParams }: NotePageProps) {
   const cookieStore = await cookies()
   const token =  cookieStore.get("token")?.value
-  const { noteId } = params
-  const folderIdParam = searchParams?.folderId
-  const colorParam = searchParams?.color
+  const { noteId } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const folderIdParam = resolvedSearchParams?.folderId;
+  const colorParam = resolvedSearchParams?.color;
 
   // "new" case
   if (noteId === "new") {
@@ -36,7 +37,7 @@ export default async function NotePage({ params, searchParams }: NotePageProps) 
   }); 
 
   if (!res.ok) {
-    return <div>Note not found</div>
+    return <div>Note not found {(await res.json()).message}</div>
   }
 
   const note = await res.json()

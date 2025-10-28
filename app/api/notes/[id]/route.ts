@@ -29,6 +29,7 @@ export async function GET(
         userId,
       },
       select: {
+        id: true,
         title: true,
         content: true,
         color: true,
@@ -36,6 +37,8 @@ export async function GET(
         isPinned: true,
         isFavorite: true,
         isArchived: true,
+        createdAt: true,
+        updatedAt: true,
         noteTags: {
           select: {
             tag: {
@@ -152,11 +155,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (Array.isArray(tagNames)) {
       connectTags = await Promise.all(
         tagNames.map(async (name: string) => {
-          const tag = await prismadb.tag.upsert({
-            where: { name },
-            update: {},
-            create: { name, userId },
+          let tag = await prismadb.tag.findFirst({
+            where: { name, userId },
           });
+
+          if (!tag) {
+            tag = await prismadb.tag.create({
+              data: { name, userId },
+            });
+          }
+
           return { tagId: tag.id };
         })
       );

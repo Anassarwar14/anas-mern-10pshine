@@ -107,11 +107,15 @@ export async function POST(req: NextRequest) {
     if (Array.isArray(tagNames) && tagNames.length > 0) {
       connectTags = await Promise.all(
         tagNames.map(async (name: string) => {
-          const tag = await prismadb.tag.upsert({
-            where: { name },
-            update: {},
-            create: { name, userId },
+          let tag = await prismadb.tag.findFirst({
+            where: { name, userId },
           });
+          
+          if (!tag) {
+            tag = await prismadb.tag.create({
+              data: { name, userId },
+            });
+          }
           return { tagId: tag.id };
         })
       );
@@ -125,6 +129,7 @@ export async function POST(req: NextRequest) {
 
     const nextOrder = (lastNote?.order ?? 0) + 1;
 
+    logger.info({userId, folderId, title, noteContent, plainText, color, nextOrder, imageURLs }, "Creating new note");
     const note = await prismadb.note.create({
       data: {
         userId,

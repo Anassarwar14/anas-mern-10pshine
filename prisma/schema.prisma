@@ -24,6 +24,9 @@ model User {
   notes     Note[]
   tags      Tag[]    @relation("UserTags")
 
+  resetPasswordToken   String?   @unique
+  resetPasswordExpiry  DateTime?
+
   @@map("users")
 }
 
@@ -67,7 +70,7 @@ model Folder {
 
 model Tag {
   id       Int       @id @default(autoincrement())
-  name     String    @unique
+  name     String
   userId   Int?
   noteTags NoteTag[]
   user     User?     @relation("UserTags", fields: [userId], references: [id])

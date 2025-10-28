@@ -22,7 +22,7 @@ export function TagSelector({ predefinedTags, selectedTags, onChange }: TagSelec
     if (!selectedTags.includes(tag)) onChange([...selectedTags, tag])
     setInput("")
     setOpen(false)
-    // setTimeout(() => inputRef.current?.focus(), 0)
+    setTimeout(() => inputRef.current?.focus(), 0)
   }
 
   const handleRemove = (tag: string) => {
@@ -40,12 +40,12 @@ export function TagSelector({ predefinedTags, selectedTags, onChange }: TagSelec
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2 text-xs">
       <Popover open={open} 
       // onOpenChange={setOpen}
       >
         <PopoverTrigger asChild>
-          <div className="relative w-56">
+          <div className="relative w-40">
             <Command>
               <CommandInput
                 ref={inputRef}
@@ -55,9 +55,10 @@ export function TagSelector({ predefinedTags, selectedTags, onChange }: TagSelec
                   setOpen(true)
                 }}
                 onFocus={() => setOpen(true)}
+                // onBlur={() => setOpen(false)}
                 onKeyDown={handleCreate}
                 placeholder="Add a tag..."
-                className="h-9"
+                className="h-3"
               />
             </Command>
           </div>
@@ -65,8 +66,8 @@ export function TagSelector({ predefinedTags, selectedTags, onChange }: TagSelec
 
         {predefinedTags.length > 0 && (
           <PopoverContent
-            className="w-56 p-0"
-            // onOpenAutoFocus={(e) => e.preventDefault()}
+            className="w-40 p-0"
+            onOpenAutoFocus={(e) => e.preventDefault()}
           >
             <Command>
               <CommandGroup>
@@ -88,7 +89,6 @@ export function TagSelector({ predefinedTags, selectedTags, onChange }: TagSelec
         )}
 
         {selectedTags.map(tag => (
-          <PopoverContent>
             <Badge
             key={tag}
             variant="outline"
@@ -98,7 +98,6 @@ export function TagSelector({ predefinedTags, selectedTags, onChange }: TagSelec
               {tag}
               <X className="w-3 h-3 opacity-60 hover:opacity-100" />
             </Badge>
-          </PopoverContent>
         ))}
       </Popover>
     </div>

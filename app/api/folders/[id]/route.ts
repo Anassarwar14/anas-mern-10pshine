@@ -125,7 +125,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       return NextResponse.json({ error: "Invalid folder ID" }, { status: 400 });
     }
 
-    const folder = await prismadb.folder.findUnique({
+    const folder = await prismadb.folder.findFirst({
       where: { id: folderId, userId },
     });
 
@@ -135,8 +135,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     await prismadb.$transaction(async (tx) => {
-      await tx.folder.delete({ where: { id: folderId } });
-
       await tx.folder.updateMany({
         where: {
           userId,
@@ -144,6 +142,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         },
         data: { order: { decrement: 1 } },
       });
+      await tx.folder.delete({ where: { id: folderId } });
     });
 
     logger.info({ userId, folderId }, "Folder deleted successfully");

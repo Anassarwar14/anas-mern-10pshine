@@ -77,6 +77,7 @@ import "@/components/tiptap-templates/simple/simple-editor.scss"
 import content from "@/components/tiptap-templates/simple/data/content.json"
 import { CloudAlert, CloudCheck, CloudUpload } from "lucide-react";
 import { TagSelector } from "@/components/tiptap-ui/tagSelector"
+import { ResponsiveToolbar } from "@/components/tiptap-ui/responsiveToolbar"
 
 
 interface SimpleEditorProps {
@@ -94,6 +95,26 @@ interface SimpleEditorProps {
 }
 
 
+function lightenColor(hex: string, percent: number) {
+  const num = parseInt(hex.replace("#", ""), 16)
+  const amt = Math.round(2.55 * percent)
+  const R = (num >> 16) + amt
+  const G = ((num >> 8) & 0x00ff) + amt
+  const B = (num & 0x0000ff) + amt
+  return (
+    "#" +
+    (
+      0x1000000 +
+      (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+      (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
+      (B < 255 ? (B < 1 ? 0 : B) : 255)
+    )
+      .toString(16)
+      .slice(1)
+  )
+}
+
+
 const MainToolbarContent = ({
   onHighlighterClick,
   onLinkClick,
@@ -102,7 +123,8 @@ const MainToolbarContent = ({
   title,
   predefinedTags,
   selectedTags,
-  setSelectedTags
+  setSelectedTags,
+  saveNote
 }: {
   onHighlighterClick: () => void
   onLinkClick: () => void
@@ -112,11 +134,12 @@ const MainToolbarContent = ({
   predefinedTags: string[]
   selectedTags: string[]
   setSelectedTags: React.Dispatch<React.SetStateAction<string[]>>
+  saveNote: (content?: any, tags?: string[]) => void
 }) => {
   return (
     <>
       <Spacer />
-      <h2 style={{ fontFamily: 'var(--font-playfair)' }} className=" font-medium  text-secondary-foreground tracking-normal truncate hover:bg-gray-100 rounded px-1 py-0.5 cursor-text w-auto transition-colors">
+      <h2 style={{ fontFamily: 'var(--font-playfair)' }} className=" font-medium  text-secondary-foreground tracking-normal truncate hover:bg-gray-100 rounded px-1 py-0.5 cursor-text min-w-2 w-auto transition-colors">
         {title}
       </h2>
       <div className="mx-4 text-xs">
@@ -185,7 +208,6 @@ const MainToolbarContent = ({
         <ImageUploadButton text="Add" />
       </ToolbarGroup>
 
-      <Spacer />
 
       {isMobile && <ToolbarSeparator />}
 
@@ -194,11 +216,15 @@ const MainToolbarContent = ({
           <TagSelector
             predefinedTags={predefinedTags}
             selectedTags={selectedTags}
-            onChange={setSelectedTags}
+            onChange={(newTags) => {
+              setSelectedTags(newTags)
+              saveNote(undefined, newTags) // trigger save only for tags
+            }}
           />
         </div>
       </ToolbarGroup>
       
+      <Spacer />
       <ToolbarGroup>
         <ThemeToggle />
       </ToolbarGroup>
@@ -261,6 +287,71 @@ export function SimpleEditor({
   const toolbarRef = React.useRef<HTMLDivElement>(null)
   const saveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
+  const [isDark, setIsDark] = React.useState(false)
+  const [toolbarColor, setToolbarColor] = React.useState("")
+  const [editorColor, setEditorColor] = React.useState("")
+
+
+  const saveNote = async (content?: any, tags?: string[]) => {
+    if (!currentNoteId && mode === "create" && !isCreating) {
+      setIsCreating(true)
+      try {
+        const response = await fetch("/api/notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content: content || editor?.getJSON(),
+            folderId,
+            color: initialColor || "#FFE6A7",
+            tagNames: tags || selectedTags,
+          }),
+        })
+
+        const newNote = await response.json()
+        setCurrentNoteId(newNote.id)
+        window.history.replaceState(null, "", `/dashboard/${newNote.id}`)
+      } catch (error) {
+        console.error("Failed to create note:", error)
+      } finally {
+        setIsCreating(false)
+      }
+    } else if (currentNoteId) {
+      setSaveStatus("saving")
+      try {
+        const response = await fetch(`/api/notes/${currentNoteId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content: content || editor?.getJSON(),
+            folderId,
+            color: initialColor || "#FFE6A7",
+            tagNames: tags || selectedTags,
+            isPinned: initialPinned,
+            isFavorite: initialFavorite,
+            isArchived: initialArchive,
+            order: initialOrder,
+          }),
+        })
+
+        if (!response.ok) throw new Error("Failed to save")
+
+        const updatedNote = await response.json()
+        if (updatedNote.title && updatedNote.title !== currentTitle) {
+          setCurrentTitle(updatedNote.title)
+        }
+
+        setSaveStatus("saved")
+        setTimeout(() => setSaveStatus("idle"), 2000)
+        console.log("✓ Note saved")
+      } catch (error) {
+        console.error("✗ Failed to save:", error)
+        setSaveStatus("error")
+        setTimeout(() => setSaveStatus("idle"), 5000)
+      }
+    }
+  }
+
+
   const editor = useEditor({
     immediatelyRender: false,
     shouldRerenderOnTransaction: false,
@@ -272,6 +363,23 @@ export function SimpleEditor({
         "aria-label": "Main content area, start typing to enter text.",
         class: "simple-editor",
       },
+      handleKeyDown: (view, event) => {
+      // Ctrl+S (Windows/Linux) or Cmd+S (Mac)
+      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+        event.preventDefault() // prevent browser “save page” dialog
+        console.log("Manual save triggered ✨")
+         console.log("🔍 Editor state:", {
+          hasEditor: !!view,
+          currentNoteId,
+          mode,
+          isCreating
+        });
+        
+        saveNote(editor?.getJSON())
+        return true
+      }
+      return false
+    } ,
     },
     extensions: [
       StarterKit.configure({
@@ -309,75 +417,9 @@ export function SimpleEditor({
       }
 
       saveTimeoutRef.current = setTimeout(async () => {
-        const newContent = editor.getJSON()
-        
-        if (mode === 'create' && !currentNoteId) {
-          // First save - create note
-          if (isCreating) return // Prevent duplicate creation
-          
-          setIsCreating(true)
-          try {
-            const response = await fetch('/api/notes', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                content: newContent,
-                folderId,
-                color: initialColor || '#FFE6A7',
-                initialTags
-              })
-            })
-            
-            const newNote = await response.json()
-            setCurrentNoteId(newNote.id)
-            
-            // Update URL without reload
-            window.history.replaceState(
-              null, 
-              '', 
-              `/dashboard/${newNote.id}`
-            )
-          } catch (error) {
-            console.error('Failed to create note:', error)
-          } finally {
-            setIsCreating(false)
-          }
-        } else if (currentNoteId) {
-
-          setSaveStatus('saving')
-          // Update existing note
-          try {
-            const response = await fetch(`/api/notes/${currentNoteId}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                content: newContent,
-                folderId,
-                color: initialColor || '#FFE6A7',
-                tagNames: initialTags,
-                isPinned: initialPinned,
-                isFavorite: initialFavorite,
-                isArchived: initialArchive,
-                order: initialOrder
-              })
-            })
-
-            if (!response.ok) throw new Error('Failed to save')
-            const updatedNote = await response.json()
-            if(updatedNote.title && updatedNote.title !== currentTitle){
-              setCurrentTitle(updatedNote.title)
-            }
-            setSaveStatus('saved')
-            setTimeout(() => setSaveStatus('idle'), 2000)
-            console.log('✓ Note saved')
-          } catch (error) {
-            console.error('✗ Failed to save:', error)
-            setSaveStatus('error')
-            setTimeout(() => setSaveStatus('idle'), 5000)
-          }
-        }
-      }, 5000) // 5 second debounce
-    }
+       saveNote(editor.getJSON(), selectedTags)
+      }, 3000) // 3 second debounce
+    },
   })
 
   // Cleanup
@@ -400,11 +442,33 @@ export function SimpleEditor({
     }
   }, [isMobile, mobileView])
 
+
+  React.useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"))
+    }
+
+    updateTheme()
+    const observer = new MutationObserver(updateTheme)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] })
+    return () => observer.disconnect()
+  }, [])
+
+  React.useEffect(() => {
+    if (!initialColor) return
+    if (isDark) {
+      setToolbarColor(lightenColor(initialColor, -35))
+      setEditorColor(lightenColor(initialColor, -20))
+    } else {
+      setToolbarColor(lightenColor(initialColor, 10))
+      setEditorColor(lightenColor(initialColor, 25))
+    }
+  }, [initialColor, isDark])
+
+
   return (
     <div className="simple-editor-wrapper px-10 py-5">
       <EditorContext.Provider value={{ editor }}>
-        {/* --- Tag Selector --- */}
-        
         <Toolbar
           ref={toolbarRef}
           variant="floating"
@@ -414,31 +478,34 @@ export function SimpleEditor({
                   bottom: `calc(100% - ${height - rect.y}px)`,
                 }
               : {}),
+            ["--toolbar-bg" as any]: toolbarColor || "#FFFFFF"
           }}
         >
-          {mobileView === "main" ? (
-            <MainToolbarContent
-              onHighlighterClick={() => setMobileView("highlighter")}
-              onLinkClick={() => setMobileView("link")}
-              isMobile={isMobile}
-              saveStatus={saveStatus}
-              title={currentTitle}
-              predefinedTags={predefinedTags}
-              selectedTags={selectedTags}
-              setSelectedTags={setSelectedTags}
-            />
-          ) : (
-            <MobileToolbarContent
-              type={mobileView === "highlighter" ? "highlighter" : "link"}
-              onBack={() => setMobileView("main")}
-            />
-          )}
+            {mobileView === "main" ? (
+              <MainToolbarContent
+                onHighlighterClick={() => setMobileView("highlighter")}
+                onLinkClick={() => setMobileView("link")}
+                isMobile={isMobile}
+                saveStatus={saveStatus}
+                title={currentTitle}
+                predefinedTags={predefinedTags}
+                selectedTags={selectedTags}
+                setSelectedTags={setSelectedTags}
+                saveNote={saveNote}
+              />
+            ) : (
+              <MobileToolbarContent
+                type={mobileView === "highlighter" ? "highlighter" : "link"}
+                onBack={() => setMobileView("main")}
+              />
+            )}
         </Toolbar>
 
         <EditorContent
           editor={editor}
           role="presentation"
           className="simple-editor-content"
+          style={{  ["--editor-bg" as any]: editorColor || "#FFFFFF"}}
         />
       </EditorContext.Provider>
     </div>

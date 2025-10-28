@@ -6,6 +6,7 @@ import { Button } from "./ui/button";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import ForgotPasswordModal from "./ForgotPasswordModal";
 
 interface SignUpFormProps {
     mode: String
@@ -24,6 +25,7 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
   const router = useRouter(); 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>()
   const [serverError, setServerError] = useState('')
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
 
   const onSubmit = async (data: FormData) => {
     setServerError('')
@@ -51,8 +53,9 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
   }
 
   return (
-    <main className="h-full sm:grid grid-cols-3">
-      <section className="hidden md:block col-span-2 p-2 h-full">
+    <>
+      <main className="h-full sm:grid grid-cols-3">
+        <section className="hidden md:block col-span-2 p-2 h-full">
           <div className="overflow-hidden relative h-full rounded-3xl p-6">
             <Image 
               className="-z-10 object-cover object-bottom-left" 
@@ -138,7 +141,18 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
             </div>
             
             <div className="col-span-2">
-              <h4>Password</h4>
+              <div className="flex items-center justify-between mb-2">
+                <h4>Password</h4>
+                {mode === 'login' && (
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="cursor-pointer text-xs text-rose-700 hover:text-rose-800 hover:underline transition-colors"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
               <input 
                 placeholder="********"
                 type="password" 
@@ -175,7 +189,14 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
             }
           </footer>
         </section>
-    </main>
+      </main>
+
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        isOpen={showForgotPassword} 
+        onClose={() => setShowForgotPassword(false)} 
+      />
+    </>
   )
 }
 

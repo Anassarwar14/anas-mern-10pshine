@@ -34,7 +34,7 @@ export default function LogOutButton() {
       onClick={handleLogout}
       disabled={loading}
       size="sm"
-      className="flex items-center gap-2 text-white"
+      className="w-full flex items-center gap-2 text-white"
     >
       <LogOut className="h-4 w-4" />
       {loading ? "Logging out..." : "Log out"}
