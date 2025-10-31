@@ -22,7 +22,7 @@ const ProfilePopover = ({ sidebarCollapsed = false }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch('/api/users');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users`);
         if (response.ok) {
           const data = await response.json();
           setUser(data.user);

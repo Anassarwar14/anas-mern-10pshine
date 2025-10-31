@@ -31,7 +31,7 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
     setServerError('')
     
     try {
-      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/signup'
+      const endpoint = mode === 'login' ? `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/login` : `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/signup`
       
       const response = await fetch(endpoint, {
         method: 'POST',

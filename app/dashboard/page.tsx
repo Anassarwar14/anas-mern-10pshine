@@ -64,7 +64,7 @@ export default function Dashboard() {
   const handleUpdateNote = async (note: Note, updates: Partial<Note>) => {
     try {
       const updated = { ...note, ...updates }
-      const res = await fetch(`/api/notes/${note.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/notes/${note.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -106,7 +106,7 @@ export default function Dashboard() {
 
   const handleDeleteNote = async (id: number) => {
     try {
-      const res = await fetch(`/api/notes/${id}`, { method: "DELETE" })
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/notes/${id}`, { method: "DELETE" })
       if (!res.ok) throw new Error("Failed to delete note")
 
       setFolders(prev =>

@@ -295,7 +295,7 @@ export function SimpleEditor({
     if (!currentNoteId && mode === "create" && !isCreating) {
       setIsCreating(true)
       try {
-        const response = await fetch("/api/notes", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/notes`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -317,7 +317,7 @@ export function SimpleEditor({
     } else if (currentNoteId) {
       setSaveStatus("saving")
       try {
-        const response = await fetch(`/api/notes/${currentNoteId}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/notes/${currentNoteId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

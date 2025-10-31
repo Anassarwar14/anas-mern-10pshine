@@ -133,7 +133,7 @@ export const ExpandedSidebar = ({
       );
       setNewFolderTempId(null);
 
-      await fetch(`/api/folders`, {
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/folders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: trimmed }),
@@ -144,7 +144,7 @@ export const ExpandedSidebar = ({
         prev.map((f) => (f.id === folderId ? { ...f, name: trimmed } : f))
       );
       setEditingFolderId(null)
-      await fetch(`/api/folders/${folderId}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/folders/${folderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: trimmed }),
@@ -159,7 +159,7 @@ export const ExpandedSidebar = ({
   const handleDeleteFolder = async (folderId: number) => {
     console.log(folderId);
     
-    await fetch(`/api/folders/${folderId}`, {
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/folders/${folderId}`, {
       method: "DELETE",
     })
     setShowConfirm(false)
@@ -177,7 +177,7 @@ export const ExpandedSidebar = ({
     } else {
       setQuickNotes((prev) => prev.filter((n) => n.id !== noteId));
     }
-    await fetch(`/api/notes/${noteId}`, { method: "DELETE" })
+    await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/notes/${noteId}`, { method: "DELETE" })
   };
 
   const handleOpenNote = (noteId: number) =>{ setActiveMenu(null); router.push(`/dashboard/${noteId}`)};
