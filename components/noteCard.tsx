@@ -29,8 +29,16 @@ export default function NoteCard({ note, onToggleFavorite, onTogglePin, onDelete
 
   const truncateText = (text: string, lines = 3) => {
     if (!text) return ""
-    const lineArray = text.split("\n").slice(0, lines)
-    return lineArray.join("\n").substring(0, 150) + (text.length > 150 ? "..." : "")
+    let content = text.trim()
+    const titleNormalized = note.title.trim().toLowerCase()
+    const contentNormalized = content.toLowerCase()
+
+    if (contentNormalized.startsWith(titleNormalized)) {
+      content = content.slice(note.title.length).trimStart()
+    }
+    
+    const lineArray = content.split("\n").slice(0, lines)
+    return lineArray.join("\n").substring(0, 150) + (content.length > 150 ? "..." : "")
   }
 
   return (

@@ -11,7 +11,7 @@ interface SidebarHeaderProps {
 export const SidebarHeader = ({ sidebarCollapsed, setSidebarCollapsed }: SidebarHeaderProps) => {
     const router = useRouter()
     return (
-    <div className="p-4 flex items-center justify-between bg-card/10 backdrop-blur-sm relative z-10">
+    <div className="p-4 mt-2.5 flex items-center justify-between bg-card/10 backdrop-blur-sm relative z-10">
         <header onClick={() => router.push('/dashboard')} className={`cursor-pointer flex gap-x-2 items-center justify-center opacity-0 transition ease-in-out duration-700 ${!sidebarCollapsed && 'opacity-100'}`}>
             {!sidebarCollapsed && (
             <>

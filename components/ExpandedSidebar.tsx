@@ -44,33 +44,35 @@ export const ExpandedSidebar = ({
     const [editingFolderId, setEditingFolderId] = useState<number | null>(null);
     const [editingName, setEditingName] = useState<string>("");
     const [newFolderTempId, setNewFolderTempId] = useState<number | null>(null);
-    const menuRef = useRef<HTMLDivElement | null>(null);
-    const buttonRef = useRef<HTMLButtonElement | null>(null);
+    const [folderToDelete, setFolderToDelete] = useState<number | null>(null);
+    const menuRefs = useRef<Record<string, HTMLDivElement | null>>({});
+    const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
 
-    useEffect(() => {
+   useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
-        // only close if click happened outside the menu
-        if (menuRef.current && 
-            !menuRef.current.contains(event.target as Node) &&
-            !buttonRef.current?.contains(event.target as Node)) {
+        if (!activeMenu) return;
+
+        const menuEl = menuRefs.current[activeMenu];
+        const buttonEl = buttonRefs.current[activeMenu];
+
+        if (
+          menuEl &&
+          buttonEl &&
+          !menuEl.contains(event.target as Node) &&
+          !buttonEl.contains(event.target as Node)
+        ) {
           setActiveMenu(null);
         }
       };
 
-      if (activeMenu) {
-        document.addEventListener("mousedown", handleClickOutside);
-      }
-
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [activeMenu]);
 
-
     
-    const toggleMenu = (id: string) => {
-      setActiveMenu(activeMenu === id ? null : id);
+    const toggleMenu = (menuId: string) => {
+      setActiveMenu(prev => (prev === menuId ? null : menuId));
     };
   
     const toggleMyNotes = () => {
@@ -155,10 +157,13 @@ export const ExpandedSidebar = ({
 
 
   const handleDeleteFolder = async (folderId: number) => {
+    console.log(folderId);
+    
     await fetch(`/api/folders/${folderId}`, {
       method: "DELETE",
     })
     setShowConfirm(false)
+    setFolderToDelete(null);
     setFolders((prev) => prev.filter((f) => f.id !== folderId));
   };
 
@@ -378,7 +383,7 @@ export const ExpandedSidebar = ({
                   <div style={{ backgroundColor: note.color }} className={`w-3 h-3 rounded-sm border border-border flex-shrink-0`}></div>
                   <span className="text-xs text-foreground flex-1 truncate">{note.title}</span>
                   <button 
-                    ref={buttonRef}
+                    ref={(el) => {buttonRefs.current[`quick-${note.id}`] = el;}}
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleMenu(`quick-${note.id}`);
@@ -389,8 +394,8 @@ export const ExpandedSidebar = ({
                   </button>
                   
                   {activeMenu === `quick-${note.id}` && (
-                    <div ref={menuRef} className="text-xs absolute right-0 translate-x-23 translate-y-4 bg-card border border-border rounded-lg shadow-xl p-1 z-50 animate-in slide-in-from-left-5">
-                      <button className="flex items-center gap-2 w-full px-3 py-1.5 hover:bg-accent/30 rounded text-xs text-foreground cursor-pointer">
+                    <div ref={(el) => { menuRefs.current[`quick-${note.id}`] = el;}} className="text-xs absolute right-0 translate-x-23 translate-y-4 bg-card border border-border rounded-lg shadow-xl p-1 z-50 animate-in slide-in-from-left-5">
+                      <button onClick={(e) => {e.stopPropagation(); handleOpenNote(note.id)}} className="flex items-center gap-2 w-full px-3 py-1.5 hover:bg-accent/30 rounded text-xs text-foreground cursor-pointer">
                         <Edit2 className="w-3 h-3" />
                         Edit
                       </button>
@@ -492,7 +497,7 @@ export const ExpandedSidebar = ({
 
                     <span className="text-xs text-muted-foreground">{folder?.notes?.length}</span>
                     <button
-                      ref={buttonRef}
+                      ref={(el) => {buttonRefs.current[`folder-${folder.id}`] = el;}}
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleMenu(`folder-${folder.id}`);
@@ -503,7 +508,7 @@ export const ExpandedSidebar = ({
                     </button>
                     
                     {activeMenu === `folder-${folder.id}` && (
-                      <div ref={menuRef} className="absolute right-0 translate-x-25 translate-y-7 bg-card border border-border rounded-lg shadow-xl p-1 z-30 animate-in slide-in-from-left-5">
+                      <div ref={(el) => { menuRefs.current[`quick-${folder.id}`] = el;}}  className="absolute right-0 translate-x-25 translate-y-7 bg-card border border-border rounded-lg shadow-xl p-1 z-30 animate-in slide-in-from-left-5">
                         <button onClick={() => handleNewNote("", folder.id)} className="border-b border-border/50 flex items-center gap-2 w-full px-3 py-1.5 hover:bg-accent/30 rounded text-xs text-foreground whitespace-nowrap cursor-pointer">
                           <Plus className="w-3 h-3" />
                           New Note
@@ -512,20 +517,13 @@ export const ExpandedSidebar = ({
                           <Edit2 className="w-3 h-3" />
                           Rename
                         </button>
-                        <button onClick={() => setShowConfirm(true)} className="flex items-center gap-2 w-full px-3 py-1.5 hover:bg-destructive/10 rounded text-xs text-destructive whitespace-nowrap cursor-pointer">
+                        <button onClick={(e) => {e.stopPropagation();  setFolderToDelete(folder.id); setShowConfirm(true);}} className="flex items-center gap-2 w-full px-3 py-1.5 hover:bg-destructive/10 rounded text-xs text-destructive whitespace-nowrap cursor-pointer">
                           <Trash2 className="w-3 h-3" />
                           Delete
                         </button>
                       </div>
                     )}
                   </div>
-                  <ConfirmModal
-                    show={showConfirm}
-                    title="Delete Folder?"
-                    message="This will delete all notes inside. Are you sure?"
-                    onCancel={() => setShowConfirm(false)}
-                    onConfirm={() => handleDeleteFolder(folder.id)}
-                  />
                   
                   {expandedFolders[folder.id] && (
                     <div className="ml-6 space-y-1 animate-in slide-in-from-top-10">
@@ -545,6 +543,7 @@ export const ExpandedSidebar = ({
                           <div style={{ backgroundColor: note.color }} className={`w-2 h-2 rounded-sm border border-border flex-shrink-0`}></div>
                           <span className="text-xs text-foreground flex-1 truncate">{note.title}</span>
                           <button 
+                            ref={(el) => {buttonRefs.current[`note-${note.id}`] = el;}}
                             onClick={(e) => {
                               e.stopPropagation();
                               toggleMenu(`note-${note.id}`);
@@ -555,12 +554,12 @@ export const ExpandedSidebar = ({
                           </button>
                           
                           {activeMenu === `note-${note.id}` && (
-                            <div ref={menuRef} className="absolute right-0 translate-x-23 translate-y-4 bg-card border border-border rounded-lg shadow-xl p-1 z-30 animate-in slide-in-from-left-5">
-                              <button className="flex items-center gap-2 w-full px-3 py-1.5 hover:bg-accent rounded text-xs text-foreground cursor-pointer">
+                            <div ref={(el) => { menuRefs.current[`note-${note.id}`] = el;}} className="absolute right-0 translate-x-23 translate-y-4 bg-card border border-border rounded-lg shadow-xl p-1 z-30 animate-in slide-in-from-left-5">
+                              <button onClick={(e) => {e.stopPropagation(); handleOpenNote(note.id)}}  className="flex items-center gap-2 w-full px-3 py-1.5 hover:bg-accent rounded text-xs text-foreground cursor-pointer">
                                 <Edit2 className="w-3 h-3" />
                                 Edit
                               </button>
-                              <button onClick={() => handleDeleteNote(note.id)} className="flex items-center gap-2 w-full px-3 py-1.5 hover:bg-destructive/10 rounded text-xs text-destructive cursor-pointer">
+                              <button onClick={(e) => {e.stopPropagation(); handleDeleteNote(note.id)}} className="flex items-center gap-2 w-full px-3 py-1.5 hover:bg-destructive/10 rounded text-xs text-destructive cursor-pointer">
                                 <Trash2 className="w-3 h-3" />
                                 Delete
                               </button>
@@ -575,6 +574,21 @@ export const ExpandedSidebar = ({
             </div>
           )}
         </div>
+        
+        <ConfirmModal
+          show={showConfirm}
+          title="Delete Folder?"
+          message="This will delete all notes inside. Are you sure?"
+          onCancel={() => {
+            setShowConfirm(false);
+            setFolderToDelete(null);
+          }}
+          onConfirm={() => {
+            if (folderToDelete !== null) {
+              handleDeleteFolder(folderToDelete);
+            }
+          }}
+        />
 
         <button onClick={handleCreateFolder} className="w-full flex items-center justify-center gap-2 p-2 text-xs text-muted-foreground/50 italic border-2 border-dashed border-border/70 hover:border-primary hover:bg-accent/50 rounded-lg transition-all  hover:text-muted-foreground cursor-pointer">
           <Plus className="w-4 h-4" />

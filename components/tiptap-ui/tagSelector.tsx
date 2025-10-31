@@ -16,34 +16,58 @@ interface TagSelectorProps {
 export function TagSelector({ predefinedTags, selectedTags, onChange }: TagSelectorProps) {
   const [input, setInput] = React.useState("")
   const [open, setOpen] = React.useState(false)
+  const [localTags, setLocalTags] = React.useState<string[]>(selectedTags)
   const inputRef = React.useRef<HTMLInputElement>(null)
+  const popoverRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    setLocalTags(selectedTags)
+  }, [selectedTags])
+
+  React.useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (JSON.stringify(localTags) !== JSON.stringify(selectedTags)) {
+        onChange(localTags)
+      }
+    }, 3000)
+
+    return () => clearTimeout(timeout)
+  }, [localTags, onChange, selectedTags])
 
   const handleSelect = (tag: string) => {
-    if (!selectedTags.includes(tag)) onChange([...selectedTags, tag])
+    if (!localTags.includes(tag)) setLocalTags([...localTags, tag])
     setInput("")
     setOpen(false)
-    setTimeout(() => inputRef.current?.focus(), 0)
+    // setTimeout(() => inputRef.current?.focus(), 0)
   }
 
   const handleRemove = (tag: string) => {
-    onChange(selectedTags.filter(t => t !== tag))
+    setLocalTags(localTags.filter(t => t !== tag))
   }
 
   const handleCreate = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && input.trim() && !selectedTags.includes(input.trim())) {
+    if (e.key === "Enter" && input.trim() && !localTags.includes(input.trim())) {
       e.preventDefault()
-      onChange([...selectedTags, input.trim()])
+      setLocalTags([...localTags, input.trim()])
       setInput("")
       setOpen(false)
-      // setTimeout(() => inputRef.current?.focus(), 0)
     }
+  }
+
+   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    setTimeout(() => {
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(document.activeElement)
+      ) {
+        setOpen(false)
+      }
+    }, 100)
   }
 
   return (
     <div className="flex flex-wrap items-center gap-2 text-xs">
-      <Popover open={open} 
-      // onOpenChange={setOpen}
-      >
+      <Popover open={open}>
         <PopoverTrigger asChild>
           <div className="relative w-40">
             <Command>
@@ -55,7 +79,7 @@ export function TagSelector({ predefinedTags, selectedTags, onChange }: TagSelec
                   setOpen(true)
                 }}
                 onFocus={() => setOpen(true)}
-                // onBlur={() => setOpen(false)}
+                onBlur={handleBlur}
                 onKeyDown={handleCreate}
                 placeholder="Add a tag..."
                 className="h-3"
@@ -66,6 +90,7 @@ export function TagSelector({ predefinedTags, selectedTags, onChange }: TagSelec
 
         {predefinedTags.length > 0 && (
           <PopoverContent
+            ref={popoverRef}
             className="w-40 p-0"
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
@@ -78,7 +103,7 @@ export function TagSelector({ predefinedTags, selectedTags, onChange }: TagSelec
                       key={tag}
                       value={tag}
                       onSelect={() => handleSelect(tag)}
-                      className={cn(selectedTags.includes(tag) && "opacity-50")}
+                      className={cn(localTags.includes(tag) && "opacity-50")}
                     >
                       {tag}
                     </CommandItem>
@@ -88,16 +113,16 @@ export function TagSelector({ predefinedTags, selectedTags, onChange }: TagSelec
           </PopoverContent>
         )}
 
-        {selectedTags.map(tag => (
-            <Badge
+        {localTags.map(tag => (
+          <Badge
             key={tag}
             variant="outline"
-              className="flex items-center gap-1 px-2 py-1 cursor-pointer"
-              onClick={() => handleRemove(tag)}
-            >
-              {tag}
-              <X className="w-3 h-3 opacity-60 hover:opacity-100" />
-            </Badge>
+            className="flex items-center gap-1 px-2 py-1 cursor-pointer"
+            onClick={() => handleRemove(tag)}
+          >
+            {tag}
+            <X className="w-3 h-3 opacity-60 hover:opacity-100" />
+          </Badge>
         ))}
       </Popover>
     </div>

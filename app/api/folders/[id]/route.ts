@@ -135,6 +135,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     await prismadb.$transaction(async (tx) => {
+      await tx.folder.delete({ where: { id: folderId } });
       await tx.folder.updateMany({
         where: {
           userId,
@@ -142,7 +143,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         },
         data: { order: { decrement: 1 } },
       });
-      await tx.folder.delete({ where: { id: folderId } });
     });
 
     logger.info({ userId, folderId }, "Folder deleted successfully");

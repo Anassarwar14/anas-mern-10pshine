@@ -1,0 +1,717 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 1,
+        "textAlign": null
+      },
+      "content": [
+        {
+          "text": "Keyboard Shortcuts",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "textAlign": null
+      },
+      "content": [
+        {
+          "text": "Speed up your workflow with these handy shortcuts. Use ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " or ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " depending on your OS.",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 2,
+        "textAlign": null
+      },
+      "content": [
+        {
+          "text": "Essentials",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "textAlign": null
+      },
+      "content": [
+        {
+          "text": "Copy: ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + C",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + C",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": "\nCut: ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + X",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + X",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": "\nPaste: ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + V",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + V",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": "\nUndo: ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + Z",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + Z",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": "\nRedo: ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + Shift + Z",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + Shift + Z",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 2,
+        "textAlign": null
+      },
+      "content": [
+        {
+          "text": "Text Formatting",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "textAlign": null
+      },
+      "content": [
+        {
+          "text": "Bold:",
+          "type": "text",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + B",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + B",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": "\n",
+          "type": "text"
+        },
+        {
+          "text": "Italic",
+          "type": "text",
+          "marks": [
+            {
+              "type": "italic"
+            }
+          ]
+        },
+        {
+          "text": ": ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + I",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + I",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": "\n",
+          "type": "text"
+        },
+        {
+          "text": "Underline",
+          "type": "text",
+          "marks": [
+            {
+              "type": "underline"
+            }
+          ]
+        },
+        {
+          "text": ": ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + U",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + U",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": "\n",
+          "type": "text"
+        },
+        {
+          "text": "Strikethrough",
+          "type": "text",
+          "marks": [
+            {
+              "type": "strike"
+            }
+          ]
+        },
+        {
+          "text": ": ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + Shift + S",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + Shift + S",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": "\nInline code: ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + E",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + E",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 2,
+        "textAlign": null
+      },
+      "content": [
+        {
+          "text": "Lists & Blocks",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "textAlign": null
+      },
+      "content": [
+        {
+          "text": "Bullet list: ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + Shift + 8",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + Shift + 8",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": "\nNumbered list: ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + Shift + 7",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + Shift + 7",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": "\nTask list: ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + Shift + 9",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + Shift + 9",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": "\nBlockquote: ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + Shift + B",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + Shift + B",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": "\nCode block: ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + Alt + C",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + Alt + C",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 2,
+        "textAlign": null
+      },
+      "content": [
+        {
+          "text": "Alignment & Subscripts",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "textAlign": null
+      },
+      "content": [
+        {
+          "text": "Left align: ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + Shift + L",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + Shift + L",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": "\nCenter align: ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + Shift + E",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + Shift + E",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": "\nRight align: ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + Shift + R",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + Shift + R",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": "\nSubscript: ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + ,",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + ,",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": "\nSuperscript: ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + .",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + .",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "horizontalRule"
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "textAlign": null
+      }
+    }
+  ]
+}

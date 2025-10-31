@@ -74,7 +74,6 @@ import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils"
 // --- Styles ---
 import "@/components/tiptap-templates/simple/simple-editor.scss"
 
-import content from "@/components/tiptap-templates/simple/data/content.json"
 import { CloudAlert, CloudCheck, CloudUpload } from "lucide-react";
 import { TagSelector } from "@/components/tiptap-ui/tagSelector"
 import { ResponsiveToolbar } from "@/components/tiptap-ui/responsiveToolbar"
@@ -212,7 +211,7 @@ const MainToolbarContent = ({
       {isMobile && <ToolbarSeparator />}
 
       <ToolbarGroup>
-        <div className="">
+        <div >
           <TagSelector
             predefinedTags={predefinedTags}
             selectedTags={selectedTags}
@@ -368,14 +367,14 @@ export function SimpleEditor({
       if ((event.ctrlKey || event.metaKey) && event.key === "s") {
         event.preventDefault() // prevent browser “save page” dialog
         console.log("Manual save triggered ✨")
-         console.log("🔍 Editor state:", {
+         console.log("Editor state:", {
           hasEditor: !!view,
           currentNoteId,
           mode,
           isCreating
         });
         
-        saveNote(editor?.getJSON())
+        editor && saveNote(editor.getJSON())
         return true
       }
       return false
@@ -418,7 +417,7 @@ export function SimpleEditor({
 
       saveTimeoutRef.current = setTimeout(async () => {
        saveNote(editor.getJSON(), selectedTags)
-      }, 3000) // 3 second debounce
+      }, 2000) // 2 second debounce
     },
   })
 
