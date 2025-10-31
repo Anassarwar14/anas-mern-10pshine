@@ -119,7 +119,6 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-        {/* Header */}
         <div className="mb-8">
           <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
             <Lock className="w-6 h-6 text-blue-600" />
@@ -132,9 +131,7 @@ export default function ResetPasswordPage() {
           </p>
         </div>
 
-        {/* Form */}
         <div className="space-y-4">
-          {/* New Password */}
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
               New Password
@@ -161,7 +158,6 @@ export default function ResetPasswordPage() {
             </div>
           </div>
 
-          {/* Confirm Password */}
           <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
               Confirm Password
@@ -185,7 +181,6 @@ export default function ResetPasswordPage() {
             </div>
           </div>
 
-          {/* Password Requirements */}
           <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-600">
             <p className="font-medium mb-1">Password must contain:</p>
             <ul className="space-y-1 ml-4 list-disc">
@@ -196,7 +191,6 @@ export default function ResetPasswordPage() {
             </ul>
           </div>
 
-          {/* Validation Error */}
           {validationError && (
             <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
               <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
@@ -204,7 +198,6 @@ export default function ResetPasswordPage() {
             </div>
           )}
 
-          {/* Error */}
           {error && (
             <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
@@ -212,7 +205,6 @@ export default function ResetPasswordPage() {
             </div>
           )}
 
-          {/* Submit Button */}
           <button
             onClick={handleSubmit}
             disabled={loading || !password || !confirmPassword}
@@ -222,7 +214,6 @@ export default function ResetPasswordPage() {
           </button>
         </div>
 
-        {/* Back to Login */}
         <div className="mt-6 text-center">
           <button
             onClick={() => router.push('/login')}

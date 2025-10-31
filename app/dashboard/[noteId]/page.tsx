@@ -3,7 +3,7 @@ import { cookies } from "next/headers"
 
 
 interface NotePageProps {
-  params: Promise<{ noteId: string }>  // Changed to Promise
+  params: Promise<{ noteId: string }>  
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }> 
 }
 

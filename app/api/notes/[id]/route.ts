@@ -8,9 +8,10 @@ import isEqual from "lodash/isEqual";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = req.cookies.get("token")?.value;
     if (!token) {
       logger.warn("Unauthorized request to /api/notes/[id]");
@@ -19,7 +20,7 @@ export async function GET(
 
     const decoded = verifyJwt(token);
     const userId = decoded.userId;
-    const noteId = parseInt(params.id);
+    const noteId = parseInt(id);
 
     logger.info({ userId, noteId }, "Fetching single note");
 
@@ -69,16 +70,16 @@ export async function GET(
 }
 
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const startTime = Date.now();
-
+  const { id } = await params;
   try {
     const token = req.cookies.get("token")?.value;
     if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const decoded = verifyJwt(token);
     const userId = decoded.userId;
-    const noteId = parseInt(params.id);
+    const noteId = parseInt(id);
 
     if (isNaN(noteId)) {
       logger.warn({ userId, noteId }, "Invalid note ID received");
@@ -303,16 +304,17 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = req.cookies.get("token")?.value;
     if (!token)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const decoded = verifyJwt(token);
     const userId = decoded.userId;
-    const noteId = parseInt(params.id);
+    const noteId = parseInt(id);
 
     if (isNaN(noteId))
       return NextResponse.json({ error: "Invalid note ID" }, { status: 400 });
