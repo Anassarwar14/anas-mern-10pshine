@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { LogOut } from "lucide-react";
+import { LoaderCircle, LogOut } from "lucide-react";
 
 export default function LogOutButton() {
   const router = useRouter();
@@ -34,10 +34,10 @@ export default function LogOutButton() {
       onClick={handleLogout}
       disabled={loading}
       size="sm"
-      className="w-full flex items-center gap-2 text-white"
+      className="w-full flex items-center gap-2 text-white cursor-pointer"
     >
       <LogOut className="h-4 w-4" />
-      {loading ? "Logging out..." : "Log out"}
+      {loading ? <div className='flex items-center gap-x-2'><LoaderCircle className="animate-spin" /> "Logging out..." </div>: "Log out"}
     </Button>
   );
 }

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NotesProvider } from "@/context/notesContext";
 import { Sidebar } from "@/components/Sidebar";
 import DotGrid from "@/components/DotGrid";
+import ShortcutHandler from "@/components/ShortcutHandler";
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -22,11 +23,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <NotesProvider initialFolders={folders} initialNotes={notes}>
-      <div className="flex min-h-screen">
+      <div className="flex h-screen overflow-hidden">
         <Sidebar />
+        <ShortcutHandler />
         <div
-          className="bg-primary-foreground"
-          style={{ width: "100%", height: "600px", position: "absolute", opacity: "100%", zIndex: "-5" }}
+          className="bg-primary-foreground fixed inset-0 pointer-events-none -z-10"
         >
           <DotGrid
             dotSize={3}
@@ -40,7 +41,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             returnDuration={1.5}
           />
         </div>
-        {children}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden w-full mt-[64px] md:mt-0">
+          {children}
+        </main>
       </div>
     </NotesProvider>
   );

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Mail, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, Mail, CheckCircle, AlertCircle, LoaderCircle } from 'lucide-react';
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -119,7 +119,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
                 disabled={loading || !email}
                 className="w-full bg-rose-600 hover:bg-rose-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-colors"
               >
-                {loading ? 'Sending...' : 'Send Reset Link'}
+                {loading ? <div className='flex items-center gap-x-2'><LoaderCircle className="animate-spin" /> "Submitting..." </div> : 'Send Reset Link'}
               </button>
             </div>
 

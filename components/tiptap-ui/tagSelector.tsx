@@ -38,7 +38,6 @@ export function TagSelector({ predefinedTags, selectedTags, onChange }: TagSelec
     if (!localTags.includes(tag)) setLocalTags([...localTags, tag])
     setInput("")
     setOpen(false)
-    // setTimeout(() => inputRef.current?.focus(), 0)
   }
 
   const handleRemove = (tag: string) => {

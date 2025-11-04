@@ -27,7 +27,6 @@ export default async function NotePage({ params, searchParams }: NotePageProps) 
   }
 
   //existing
-  // const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/notes/${noteId}`)
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/notes/${noteId}`, {
     method: 'GET',
     headers: {

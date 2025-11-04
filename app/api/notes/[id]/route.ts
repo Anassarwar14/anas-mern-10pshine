@@ -97,6 +97,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       isArchived,
       isFavorite,
       tagNames,
+      userTitle
     } = body;
     
     const existingNote = await prismadb.note.findUnique({
@@ -149,8 +150,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     logger.info({ userId, noteId, folderId }, "Starting note update");
 
     const noteContent = content && isValidTiptapContent(content) ? content : getEmptyContent();
-    const title = extractTitle(noteContent);
     const plainText = tiptapToText(noteContent);
+
+    let title = "Untitled";
+    if(!userTitle){
+      const oldExtractedTitle = extractTitle(existingNote.content);
+      const newExtractedTitle = extractTitle(noteContent);
+      const shouldUpdateTitle = (existingNote.title === oldExtractedTitle);
+      title = shouldUpdateTitle ? newExtractedTitle : existingNote.title
+    }
+    else{
+      title = userTitle ? userTitle : extractTitle(noteContent);
+    }
 
     let connectTags: { tagId: number }[] = [];
     if (Array.isArray(tagNames)) {

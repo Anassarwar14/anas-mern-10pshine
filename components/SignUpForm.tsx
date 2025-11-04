@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import ForgotPasswordModal from "./ForgotPasswordModal";
+import { LoaderCircle } from "lucide-react";
 
 interface SignUpFormProps {
     mode: String
@@ -54,7 +55,7 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
 
   return (
     <>
-      <main className="h-full sm:grid grid-cols-3">
+      <main className="min-h-screen flex flex-col md:grid md:grid-cols-3">
         <section className="hidden md:block col-span-2 p-2 h-full">
           <div className="overflow-hidden relative h-full rounded-3xl p-6">
             <Image 
@@ -79,7 +80,7 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
             </div>
           </div>
         </section>
-        <section className="flex flex-col items-center justify-between p-6">
+        <section className="flex flex-col items-center justify-between p-6 min-h-screen">
           <header className="flex gap-2 items-center justify-center">
             <div>
              <Image width={32} height={32} src="/favicon.jpg" alt="logo.png"/>
@@ -87,7 +88,7 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
             <h3 style={{ fontFamily: 'var(--font-playfair)' }} className="text-rose-900 text-xl">Orris</h3>
           </header>
           <div className="-my-10 space-y-2">
-            <h2 className="text-4xl text-center">Welcome{mode == 'login' && ' back'}!</h2>
+            <h2 className="text-3xl sm:text-4xl text-center">Welcome{mode == 'login' && ' back'}!</h2>
             <p className="text-accent-foreground/40 text-center text-sm">Secure your thoughts and write away.</p>
           </div>
           <form 
@@ -176,8 +177,8 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
               </div>
             )}
             
-            <Button className="col-span-2" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Loading...' : mode === 'login' ? 'Login' : 'Sign Up'}
+            <Button className="col-span-2 rounded-lg mt-1 cursor-pointer" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? <LoaderCircle className="animate-spin" /> : mode === 'login' ? 'Login' : 'Sign Up'}
             </Button>
           </form>
 

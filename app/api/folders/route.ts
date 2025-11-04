@@ -20,18 +20,12 @@ export async function GET(req: NextRequest) {
       where: { userId },
       include: {
             notes: {
-              orderBy: { updatedAt: "desc" },
+              orderBy: { updatedAt: "asc" },
             },
           },
-          orderBy: { createdAt: "desc" },
+          orderBy: { createdAt: "asc" },
     });
   
-      //   orderBy: { order: "asc" },
-    //   include: {
-    //     _count: { select: { notes: true } },
-    //   },
-    // });
-
     logger.info({ userId, count: folders.length }, "Fetched folders successfully");
 
     return NextResponse.json(folders);

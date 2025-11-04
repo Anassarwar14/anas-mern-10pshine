@@ -72,7 +72,33 @@
       },
       "content": [
         {
-          "text": "Copy: ",
+          "text": "Quick Note: ",
+          "type": "text"
+        },
+        {
+          "text": "Ctrl + Q",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " / ",
+          "type": "text"
+        },
+        {
+          "text": "Cmd + Q",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": "\nCopy: ",
           "type": "text"
         },
         {

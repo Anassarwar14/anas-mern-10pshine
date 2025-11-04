@@ -13,15 +13,6 @@ const CollapsedSidebar = ({ showColorPicker, setShowColorPicker, handleNewNote }
                         handleNewNote={handleNewNote}
                     />
                 </div>
-                {/* <button className="p-2 hover:bg-accent rounded-lg transition-colors" title="Starred">
-                    <Star className="w-5 h-5 text-yellow-500" />
-                </button>
-                <button className="p-2 hover:bg-accent rounded-lg transition-colors" title="Archive">
-                    <Archive className="w-5 h-5 text-muted-foreground" />
-                </button>
-                <button className="p-2 hover:bg-accent rounded-lg transition-colors" title="Tags">
-                    <Tag className="w-5 h-5 text-primary" />
-                </button> */}
             </div>
         </>
   )

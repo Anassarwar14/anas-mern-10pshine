@@ -96,11 +96,11 @@ export async function POST(req: NextRequest) {
     const decoded = verifyJwt(token);
     const userId = decoded.userId;
 
-    const { folderId, color, content, imageURLs, tagNames } = await req.json();
+    const { folderId, color, content, imageURLs, tagNames, userTitle } = await req.json();
     logger.info({ userId, folderId }, "Creating new note");
 
     const noteContent = content && isValidTiptapContent(content) ? content : getEmptyContent();
-    const title = extractTitle(noteContent);
+    const title = userTitle ? userTitle : extractTitle(noteContent);
     const plainText = tiptapToText(noteContent);
 
     let connectTags: { tagId: number }[] = [];

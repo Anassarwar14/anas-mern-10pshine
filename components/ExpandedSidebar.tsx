@@ -7,6 +7,7 @@ import { updateOrder } from "@/lib/utils";
 import { Folder, Note } from "@/context/notesContext";
 import { useRouter } from "next/navigation";
 import { ConfirmModal } from "./ConfirmModal";
+import { MenuPortal } from "./MenuPortal";
 
 
 interface ExpandedSidebarProps {
@@ -91,97 +92,99 @@ export const ExpandedSidebar = ({
     };
   
 
- // --- CORE CRUD FUNCTIONS ---
-  const handleCreateFolder = () => {
-    const tempId = Date.now();
-    const newFolder = {
-      id: tempId,
-      name: "",
-      order: folders.length + 1,
-      notes: [],
-      isNew: true,
+    // --- CORE CRUD FUNCTIONS ---
+    const handleCreateFolder = () => {
+      const tempId = Date.now();
+      const newFolder = {
+        id: tempId,
+        name: "",
+        order: folders.length + 1,
+        notes: [],
+        isNew: true,
+      };
+      setFolders((prev) => [...prev, newFolder]);
+      setEditingFolderId(tempId);
+      setEditingName("");
+      setNewFolderTempId(tempId);
     };
-    setFolders((prev) => [...prev, newFolder]);
-    setEditingFolderId(tempId);
-    setEditingName("");
-    setNewFolderTempId(tempId);
-  };
 
-  const handleRenameFolder = (folderId: number, currentName: string) => {
-    setEditingFolderId(folderId);
-    setEditingName(currentName);
-  };
+    const handleRenameFolder = (folderId: number, currentName: string) => {
+      setActiveMenu(null);
+      setEditingFolderId(folderId);
+      setEditingName(currentName);
+    };
 
-  const handleSaveFolderName = async (folderId: number) => {
-    const trimmed = editingName.trim();
-    if (!trimmed) {
-      // if empty and was a new folder → remove it
-      if (newFolderTempId === folderId) {
-        setFolders((prev) => prev.filter((f) => f.id !== folderId));
-        setNewFolderTempId(null);
+    const handleSaveFolderName = async (folderId: number) => {
+      const trimmed = editingName.trim();
+      if (!trimmed) {
+        // if empty and was a new folder → remove it
+        if (newFolderTempId === folderId) {
+          setFolders((prev) => prev.filter((f) => f.id !== folderId));
+          setNewFolderTempId(null);
+        }
+        setEditingFolderId(null);
+        return;
       }
+
+      if (newFolderTempId === folderId) {
+        // new folder creation
+        setFolders((prev) =>
+          prev.map((f) =>
+            f.id === folderId ? { ...f, name: trimmed, isNew: false } : f
+          )
+        );
+        setNewFolderTempId(null);
+
+        await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/folders`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: trimmed }),
+        });
+      } else {
+        // rename existing folder
+        setFolders((prev) =>
+          prev.map((f) => (f.id === folderId ? { ...f, name: trimmed } : f))
+        );
+        setEditingFolderId(null)
+        await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/folders/${folderId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: trimmed }),
+        });
+      }
+
       setEditingFolderId(null);
-      return;
-    }
-
-    if (newFolderTempId === folderId) {
-      // new folder creation
-      setFolders((prev) =>
-        prev.map((f) =>
-          f.id === folderId ? { ...f, name: trimmed, isNew: false } : f
-        )
-      );
-      setNewFolderTempId(null);
-
-      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/folders`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: trimmed }),
-      });
-    } else {
-      // rename existing folder
-      setFolders((prev) =>
-        prev.map((f) => (f.id === folderId ? { ...f, name: trimmed } : f))
-      );
-      setEditingFolderId(null)
-      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/folders/${folderId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: trimmed }),
-      });
-    }
-
-    setEditingFolderId(null);
-  };
+    };
 
 
 
-  const handleDeleteFolder = async (folderId: number) => {
-    console.log(folderId);
+    const handleDeleteFolder = async (folderId: number) => {
+      console.log(folderId);
+      
+      fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/folders/${folderId}`, {
+        method: "DELETE",
+      })
+      setShowConfirm(false)
+      setFolderToDelete(null);
+      setFolders((prev) => prev.filter((f) => f.id !== folderId));
+    };
+
+    const handleDeleteNote = async (noteId: number, folderId?: number | null) => {
+      if (folderId) {
+        setFolders((prev) =>
+          prev.map((f) =>
+            f.id === folderId ? { ...f, notes: f.notes.filter((n: any) => n.id !== noteId) } : f
+          )
+        );
+      } else {
+        setQuickNotes((prev) => prev.filter((n) => n.id !== noteId));
+      }
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/notes/${noteId}`, { method: "DELETE" })
+    };
+
+    const handleOpenNote = (noteId: number) =>{ setActiveMenu(null); router.push(`/dashboard/${noteId}`)};
+    const handleOpenFolder = (folderId: number) =>{ setActiveMenu(null); router.push(`/dashboard?folderId=${folderId}`)};
     
-    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/folders/${folderId}`, {
-      method: "DELETE",
-    })
-    setShowConfirm(false)
-    setFolderToDelete(null);
-    setFolders((prev) => prev.filter((f) => f.id !== folderId));
-  };
-
-  const handleDeleteNote = async (noteId: number, folderId?: number | null) => {
-    if (folderId) {
-      setFolders((prev) =>
-        prev.map((f) =>
-          f.id === folderId ? { ...f, notes: f.notes.filter((n: any) => n.id !== noteId) } : f
-        )
-      );
-    } else {
-      setQuickNotes((prev) => prev.filter((n) => n.id !== noteId));
-    }
-    await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/notes/${noteId}`, { method: "DELETE" })
-  };
-
-  const handleOpenNote = (noteId: number) =>{ setActiveMenu(null); router.push(`/dashboard/${noteId}`)};
-
 
     const handleDragStart = (e: React.DragEvent, item: any, type: string, sourceFolderId?: number) => {
       const draggedData = { ...item, type, sourceFolderId };
@@ -388,13 +391,16 @@ export const ExpandedSidebar = ({
                       e.stopPropagation();
                       toggleMenu(`quick-${note.id}`);
                     }}
-                    className="opacity-0 group-hover:opacity-100 p-1 cursor-pointer rounded transition-all"
+                    className="md:opacity-0 md:group-hover:opacity-100 p-1 cursor-pointer rounded transition-all"
                   >
                     <MoreVertical className="w-4 h-4 text-muted-foreground" />
                   </button>
                   
-                  {activeMenu === `quick-${note.id}` && (
-                    <div ref={(el) => { menuRefs.current[`quick-${note.id}`] = el;}} className="text-xs absolute right-0 translate-x-23 translate-y-4 bg-card border border-border rounded-lg shadow-xl p-1 z-50 animate-in slide-in-from-left-5">
+                  <MenuPortal 
+                    buttonRef={buttonRefs.current[`quick-${note.id}`]} 
+                    isOpen={activeMenu === `quick-${note.id}`}
+                  >
+                    <div ref={(el) => { menuRefs.current[`quick-${note.id}`] = el;}} className="text-xs bg-card border border-border rounded-lg shadow-xl p-1 z-50 animate-in slide-in-from-left-5">
                       <button onClick={(e) => {e.stopPropagation(); handleOpenNote(note.id)}} className="flex items-center gap-2 w-full px-3 py-1.5 hover:bg-accent/30 rounded text-xs text-foreground cursor-pointer">
                         <Edit2 className="w-3 h-3" />
                         Edit
@@ -404,7 +410,7 @@ export const ExpandedSidebar = ({
                         Delete
                       </button>
                     </div>
-                  )}
+                  </MenuPortal>
                 </div>
               ))}
             </div>
@@ -429,7 +435,8 @@ export const ExpandedSidebar = ({
             <div className="space-y-1 animate-in slide-in-from-top-1">
               {folders.map((folder: any) => (
                 <div key={folder.id} className="space-y-1">
-                  <div 
+                  <div
+                    onClick={() => handleOpenFolder(folder.id)} 
                     draggable
                     onDragStart={(e) => handleDragStart(e, folder, 'folder')}
                     onDragOver={handleDragOver}
@@ -502,18 +509,21 @@ export const ExpandedSidebar = ({
                         e.stopPropagation();
                         toggleMenu(`folder-${folder.id}`);
                       }}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded transition-all cursor-pointer"
+                      className="md:opacity-0 md:group-hover:opacity-100 p-1 rounded transition-all cursor-pointer"
                     >
                       <MoreVertical className="w-4 h-4 text-muted-foreground" />
                     </button>
                     
-                    {activeMenu === `folder-${folder.id}` && (
-                      <div ref={(el) => { menuRefs.current[`quick-${folder.id}`] = el;}}  className="absolute right-0 translate-x-25 translate-y-7 bg-card border border-border rounded-lg shadow-xl p-1 z-30 animate-in slide-in-from-left-5">
-                        <button onClick={() => handleNewNote("", folder.id)} className="border-b border-border/50 flex items-center gap-2 w-full px-3 py-1.5 hover:bg-accent/30 rounded text-xs text-foreground whitespace-nowrap cursor-pointer">
+                    <MenuPortal 
+                      buttonRef={buttonRefs.current[`folder-${folder.id}`]} 
+                      isOpen={activeMenu === `folder-${folder.id}`}
+                    >
+                      <div ref={(el) => { menuRefs.current[`folder-${folder.id}`] = el;}}  className=" bg-card border border-border rounded-lg shadow-xl p-1 z-30 animate-in slide-in-from-left-5">
+                        <button onClick={(e) => {e.stopPropagation(); handleNewNote("", folder.id)}} className="border-b border-border/50 flex items-center gap-2 w-full px-3 py-1.5 hover:bg-accent/30 rounded text-xs text-foreground whitespace-nowrap cursor-pointer">
                           <Plus className="w-3 h-3" />
                           New Note
                         </button>
-                        <button onClick={() => handleRenameFolder(folder.id, folder.name)} className="flex items-center gap-2 w-full px-3 py-1.5 hover:bg-accent/30 rounded text-xs text-foreground whitespace-nowrap cursor-pointer">
+                        <button onClick={(e) => {e.stopPropagation(); handleRenameFolder(folder.id, folder.name)}} className="flex items-center gap-2 w-full px-3 py-1.5 hover:bg-accent/30 rounded text-xs text-foreground whitespace-nowrap cursor-pointer">
                           <Edit2 className="w-3 h-3" />
                           Rename
                         </button>
@@ -522,13 +532,14 @@ export const ExpandedSidebar = ({
                           Delete
                         </button>
                       </div>
-                    )}
+                    </MenuPortal>
                   </div>
                   
                   {expandedFolders[folder.id] && (
                     <div className="ml-6 space-y-1 animate-in slide-in-from-top-10">
                       {folder?.notes?.map((note: any) => (
-                        <div 
+                        <div
+                          onClick={() => handleOpenNote(note.id)} 
                           key={note.id}
                           draggable
                           onDragStart={(e) => handleDragStart(e, note, 'note', folder.id)}
@@ -548,13 +559,16 @@ export const ExpandedSidebar = ({
                               e.stopPropagation();
                               toggleMenu(`note-${note.id}`);
                             }}
-                            className="opacity-0 group-hover:opacity-100 p-1 cursor-pointer rounded transition-all"
+                            className="md:opacity-0 md:group-hover:opacity-100 p-1 cursor-pointer rounded transition-all"
                           >
                             <MoreVertical className="w-4 h-4 text-muted-foreground" />
                           </button>
                           
-                          {activeMenu === `note-${note.id}` && (
-                            <div ref={(el) => { menuRefs.current[`note-${note.id}`] = el;}} className="absolute right-0 translate-x-23 translate-y-4 bg-card border border-border rounded-lg shadow-xl p-1 z-30 animate-in slide-in-from-left-5">
+                          <MenuPortal 
+                            buttonRef={buttonRefs.current[`note-${note.id}`]} 
+                            isOpen={activeMenu === `note-${note.id}`}
+                          >
+                            <div ref={(el) => { menuRefs.current[`note-${note.id}`] = el;}} className="bg-card border border-border rounded-lg shadow-xl p-1 z-30 animate-in slide-in-from-left-5">
                               <button onClick={(e) => {e.stopPropagation(); handleOpenNote(note.id)}}  className="flex items-center gap-2 w-full px-3 py-1.5 hover:bg-accent rounded text-xs text-foreground cursor-pointer">
                                 <Edit2 className="w-3 h-3" />
                                 Edit
@@ -564,7 +578,7 @@ export const ExpandedSidebar = ({
                                 Delete
                               </button>
                             </div>
-                          )}
+                          </MenuPortal>
                         </div>
                       ))}
                     </div>

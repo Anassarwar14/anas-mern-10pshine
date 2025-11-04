@@ -77,7 +77,6 @@
         var(--tt-toolbar-border-width)
     );
     border: var(--tt-toolbar-border-width) solid var(--tt-toolbar-border-color);
-    // background-color: var(--tt-toolbar-bg-color);
     background-color: var(--toolbar-bg);
     box-shadow: var(--tt-shadow-elevated-md);
     outline: none;
@@ -104,7 +103,10 @@
 
     @media screen and (max-width: 480px) {
       width: 100%;
-      border-radius: 0;
+      border-radius: calc(
+        var(--tt-toolbar-padding) + var(--tt-radius-lg) +
+        var(--tt-toolbar-border-width)
+      );
       border: none;
       box-shadow: none;
     }

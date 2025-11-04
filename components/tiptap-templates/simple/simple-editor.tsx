@@ -74,43 +74,24 @@ import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils"
 // --- Styles ---
 import "@/components/tiptap-templates/simple/simple-editor.scss"
 
-import { CloudAlert, CloudCheck, CloudUpload } from "lucide-react";
+import { ChevronLeft, ChevronRight, CloudAlert, CloudCheck, CloudUpload } from "lucide-react";
 import { TagSelector } from "@/components/tiptap-ui/tagSelector"
-import { ResponsiveToolbar } from "@/components/tiptap-ui/responsiveToolbar"
+import { useNotes } from "@/context/notesContext"
+import { lightenColor } from "@/lib/utils"
 
 
 interface SimpleEditorProps {
   mode: 'create' | 'edit'
-  noteId?: number          // Only for edit mode
-  folderId?: number | null // create/edit
+  noteId?: number
+  folderId?: number | null
   title?: string
   initialContent?: any
-  initialColor?: string    // create/edit
-  initialTags?: string[]   // create/edit
+  initialColor?: string
+  initialTags?: string[]
   initialPinned?: boolean
   initialFavorite?: boolean
   initialArchive?: boolean
   initialOrder?: number | null
-}
-
-
-function lightenColor(hex: string, percent: number) {
-  const num = parseInt(hex.replace("#", ""), 16)
-  const amt = Math.round(2.55 * percent)
-  const R = (num >> 16) + amt
-  const G = ((num >> 8) & 0x00ff) + amt
-  const B = (num & 0x0000ff) + amt
-  return (
-    "#" +
-    (
-      0x1000000 +
-      (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
-      (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
-      (B < 255 ? (B < 1 ? 0 : B) : 255)
-    )
-      .toString(16)
-      .slice(1)
-  )
 }
 
 
@@ -133,100 +114,206 @@ const MainToolbarContent = ({
   predefinedTags: string[]
   selectedTags: string[]
   setSelectedTags: React.Dispatch<React.SetStateAction<string[]>>
-  saveNote: (content?: any, tags?: string[]) => void
+  saveNote: (content?: any, tags?: string[], userTitle?: string) => void
 }) => {
+
+  const [isEditing, setIsEditing] = React.useState<boolean>(false);
+  const el = React.useRef<any | null>(null);
+
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [showRightArrow, setShowRightArrow] = React.useState(false);
+  const [showLeftArrow, setShowLeftArrow] = React.useState(false);
+
+  const checkScroll = () => {
+    if (!scrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+    setShowLeftArrow(scrollLeft > 10);
+    setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+  };
+
+  React.useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, []);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (!scrollRef.current) return;
+    const scrollAmount = 200;
+    scrollRef.current.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth'
+    });
+  };
+
+
+  React.useEffect(() => {
+    if (!isEditing && el.current && title) {
+      el.current.innerText = title || "Untitled";
+    }
+  }, [title, isEditing]);
+
+  const handleFocus = () => {
+    setIsEditing(true);
+  };
+
+  const handleBlur = (e: any) => {
+    const newTitle = e.target.innerText.trim();
+    setIsEditing(false)
+    if (newTitle !== title) saveNote(undefined,undefined,newTitle);
+  };
+
+  const handleKeyDown = (e: any) => {
+    if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Tab", "Backspace"].includes(e.key)) {
+      e.stopPropagation();
+      e.nativeEvent.stopImmediatePropagation();
+    }
+
+    if (e.key === "Tab") {
+      e.preventDefault();
+      return;
+    }
+    if (e.key === "Enter") {
+      e.preventDefault();
+      e.target.blur(); 
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      e.target.innerText = title;
+      e.target.blur();
+    }
+  };
+
   return (
-    <>
-      <Spacer />
-      <h2 style={{ fontFamily: 'var(--font-playfair)' }} className=" font-medium  text-secondary-foreground tracking-normal truncate hover:bg-gray-100 rounded px-1 py-0.5 cursor-text min-w-2 w-auto transition-colors">
-        {title}
-      </h2>
-      <div className="mx-4 text-xs">
-        {saveStatus === 'saving' && (
-          <span className="flex items-center gap-1.5 text-gray-400"><CloudUpload className="w-4 h-4"/> Saving...</span>
-        )}
-        {saveStatus === 'saved' && (
-          <span className="flex items-center gap-1.5 text-green-600"><CloudCheck className="w-4 h-4"/> Saved</span>
-        )}
-        {saveStatus === 'error' && (
-          <span className="flex items-center gap-1.5 text-red-600"><CloudAlert className="w-4 h-4"/> Failed to save</span>
-        )}
-      </div>
-      <ToolbarGroup>
-        <UndoRedoButton action="undo" />
-        <UndoRedoButton action="redo" />
-      </ToolbarGroup>
+     <>
+      {showLeftArrow && (
+        <Button 
+          data-style="ghost" 
+          onClick={() => scroll('left')}
+          className="cursor-pointer flex-shrink-0 sticky left-0 z-10 bg-gradient-to-r from-[var(--toolbar-bg)] via-transparent to-transparent"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+      )}
 
-      <ToolbarSeparator />
+      <div 
+        ref={scrollRef}
+        onScroll={checkScroll}
+        className="flex items-center gap-1 overflow-x-auto scrollbar-hide flex-1"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        <Spacer />
+        <h2 
+          ref={el} 
+          contentEditable 
+          suppressContentEditableWarning
+          tabIndex={-1}
+          onFocus={handleFocus}
+          onKeyDown={handleKeyDown}
+          onKeyDownCapture={(e) => {
+            if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Backspace"].includes(e.key)) {
+              e.stopPropagation();
+            }
+          }}
+          onBlur={handleBlur} 
+          style={{ fontFamily: 'var(--font-playfair)' }} 
+          className="font-medium text-secondary-foreground tracking-normal hover:bg-primary-foreground/80 focus:bg-primary-foreground/80 rounded px-2 py-1 cursor-text sm:min-w-[120px] sm:max-w-[400px] whitespace-nowrap overflow-hidden text-ellipsis transition-colors focus:outline-none flex-shrink-0"
+        >
+          {title || "Untitled"}
+        </h2>
+        <div className="mx-2 text-xs flex-shrink-0">
+          {saveStatus === 'saving' && (
+            <span className="flex items-center gap-1.5 text-gray-400"><CloudUpload className="w-4 h-4"/> Saving...</span>
+          )}
+          {saveStatus === 'saved' && (
+            <span className="flex items-center gap-1.5 text-green-600"><CloudCheck className="w-4 h-4"/> Saved</span>
+          )}
+          {saveStatus === 'error' && (
+            <span className="flex items-center gap-1.5 text-red-600"><CloudAlert className="w-4 h-4"/> Failed to save</span>
+          )}
+        </div>
+        <ToolbarGroup className="flex-shrink-0">
+          <UndoRedoButton action="undo" />
+          <UndoRedoButton action="redo" />
+        </ToolbarGroup>
 
-      <ToolbarGroup>
-        <HeadingDropdownMenu levels={[1, 2, 3, 4]} portal={isMobile} />
-        <ListDropdownMenu
-          types={["bulletList", "orderedList", "taskList"]}
-          portal={isMobile}
-        />
-        <BlockquoteButton />
-        <CodeBlockButton />
-      </ToolbarGroup>
+        <ToolbarSeparator className="flex-shrink-0" />
 
-      <ToolbarSeparator />
+        <ToolbarGroup className="flex-shrink-0">
+          <HeadingDropdownMenu levels={[1, 2, 3, 4]} portal={isMobile} />
+          <ListDropdownMenu
+            types={["bulletList", "orderedList", "taskList"]}
+            portal={isMobile}
+          />
+          <BlockquoteButton />
+          <CodeBlockButton />
+        </ToolbarGroup>
 
-      <ToolbarGroup>
-        <MarkButton type="bold" />
-        <MarkButton type="italic" />
-        <MarkButton type="strike" />
-        <MarkButton type="code" />
-        <MarkButton type="underline" />
-        {!isMobile ? (
-          <ColorHighlightPopover />
-        ) : (
-          <ColorHighlightPopoverButton onClick={onHighlighterClick} />
-        )}
-        {!isMobile ? <LinkPopover /> : <LinkButton onClick={onLinkClick} />}
-      </ToolbarGroup>
+        <ToolbarSeparator className="flex-shrink-0" />
 
-      <ToolbarSeparator />
+        <ToolbarGroup className="flex-shrink-0">
+          <MarkButton type="bold" />
+          <MarkButton type="italic" />
+          <MarkButton type="strike" />
+          <MarkButton type="code" />
+          <MarkButton type="underline" />
+          {!isMobile ? (
+            <ColorHighlightPopover />
+          ) : (
+            <ColorHighlightPopoverButton onClick={onHighlighterClick} />
+          )}
+          {!isMobile ? <LinkPopover /> : <LinkButton onClick={onLinkClick} />}
+        </ToolbarGroup>
 
-      <ToolbarGroup>
-        <MarkButton type="superscript" />
-        <MarkButton type="subscript" />
-      </ToolbarGroup>
+        <ToolbarSeparator className="flex-shrink-0" />
 
-      <ToolbarSeparator />
+        <ToolbarGroup className="flex-shrink-0">
+          <MarkButton type="superscript" />
+          <MarkButton type="subscript" />
+        </ToolbarGroup>
 
-      <ToolbarGroup>
-        <TextAlignButton align="left" />
-        <TextAlignButton align="center" />
-        <TextAlignButton align="right" />
-        <TextAlignButton align="justify" />
-      </ToolbarGroup>
+        <ToolbarSeparator className="flex-shrink-0" />
 
-      <ToolbarSeparator />
+        <ToolbarGroup className="flex-shrink-0">
+          <TextAlignButton align="left" />
+          <TextAlignButton align="center" />
+          <TextAlignButton align="right" />
+          <TextAlignButton align="justify" />
+        </ToolbarGroup>
 
-      <ToolbarGroup>
-        <ImageUploadButton text="Add" />
-      </ToolbarGroup>
+        <ToolbarSeparator className="flex-shrink-0" />
 
+        <ToolbarGroup className="flex-shrink-0">
+          <ImageUploadButton text="Add" />
+        </ToolbarGroup>
 
-      {isMobile && <ToolbarSeparator />}
+        {isMobile && <ToolbarSeparator className="flex-shrink-0" />}
 
-      <ToolbarGroup>
-        <div >
+        <ToolbarGroup className="flex-shrink-0">
           <TagSelector
             predefinedTags={predefinedTags}
             selectedTags={selectedTags}
             onChange={(newTags) => {
               setSelectedTags(newTags)
-              saveNote(undefined, newTags) // trigger save only for tags
+              saveNote(undefined, newTags)
             }}
           />
-        </div>
-      </ToolbarGroup>
-      
-      <Spacer />
-      <ToolbarGroup>
-        <ThemeToggle />
-      </ToolbarGroup>
+        </ToolbarGroup>
+        
+        <Spacer />
+        <ToolbarGroup className="flex-shrink-0">
+          <ThemeToggle />
+        </ToolbarGroup>
+      </div>
+
+      {showRightArrow && (
+        <Button 
+          data-style="ghost" 
+          onClick={() => scroll('right')}
+          className="cursor-pointer flex-shrink-0 sticky right-0 z-10 bg-gradient-to-l from-transparent via-transparent to-[var(--toolbar-bg)]"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+      )}
     </>
   )
 }
@@ -275,6 +362,7 @@ export function SimpleEditor({
 }: SimpleEditorProps) {
   const isMobile = useIsMobile()
   const { height } = useWindowSize()
+  const { setQuickNotes } = useNotes()
   const [mobileView, setMobileView] = React.useState<"main" | "highlighter" | "link">("main")
   const [saveStatus, setSaveStatus] = React.useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [currentTitle, setCurrentTitle] = React.useState(title || 'Untitled')
@@ -291,7 +379,7 @@ export function SimpleEditor({
   const [editorColor, setEditorColor] = React.useState("")
 
 
-  const saveNote = async (content?: any, tags?: string[]) => {
+  const saveNote = async (content?: any, tags?: string[], userTitle?: string) => {
     if (!currentNoteId && mode === "create" && !isCreating) {
       setIsCreating(true)
       try {
@@ -299,6 +387,7 @@ export function SimpleEditor({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            userTitle,
             content: content || editor?.getJSON(),
             folderId,
             color: initialColor || "#FFE6A7",
@@ -309,6 +398,10 @@ export function SimpleEditor({
         const newNote = await response.json()
         setCurrentNoteId(newNote.id)
         window.history.replaceState(null, "", `/dashboard/${newNote.id}`)
+        if (newNote.title !== "Untitled") {
+          setCurrentTitle(newNote.title)
+        }
+        setQuickNotes(prev => [...prev, newNote])
       } catch (error) {
         console.error("Failed to create note:", error)
       } finally {
@@ -321,6 +414,7 @@ export function SimpleEditor({
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            userTitle,
             content: content || editor?.getJSON(),
             folderId,
             color: initialColor || "#FFE6A7",
@@ -338,7 +432,7 @@ export function SimpleEditor({
         if (updatedNote.title && updatedNote.title !== currentTitle) {
           setCurrentTitle(updatedNote.title)
         }
-
+        setQuickNotes(prev => prev.map(n => (n.id === updatedNote.id ? updatedNote : n)))
         setSaveStatus("saved")
         setTimeout(() => setSaveStatus("idle"), 2000)
         console.log("✓ Note saved")
@@ -466,7 +560,7 @@ export function SimpleEditor({
 
 
   return (
-    <div className="simple-editor-wrapper px-10 py-5">
+    <div className="simple-editor-wrapper px-5 sm:px-10 py-5">
       <EditorContext.Provider value={{ editor }}>
         <Toolbar
           ref={toolbarRef}

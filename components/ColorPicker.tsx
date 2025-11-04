@@ -8,7 +8,9 @@ interface ColorPickerProps {
   colors?: Color[];
   showColorPicker: boolean;
   setShowColorPicker: (value: boolean) => void;
-  handleNewNote?: (color: string) => void;
+  handleNewNote?: (color: string, folderId?: number) => void;
+  horizontal?: boolean 
+  folderId?: number | null
 }
 
 const defaultColors: Color[] = [
@@ -25,13 +27,22 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
   showColorPicker,
   setShowColorPicker,
   handleNewNote,
+  horizontal,
+  folderId
 }) => {
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [hoveredColorId, setHoveredColorId] = useState<number | null>(null);
 
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
-    if (handleNewNote) handleNewNote(color);
+    if (handleNewNote){
+      if(folderId){
+        handleNewNote(color, folderId);
+      }
+      else{
+        handleNewNote(color);
+      }
+    } 
     setShowColorPicker(false);
     setHoveredColorId(null);
   };
@@ -53,22 +64,22 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
         </defs>
       </svg>
 
-      <div className="flex flex-col items-center gap-1">
+      <div className={`flex flex-col items-center gap-1 ${horizontal && showColorPicker && 'animate-in slide-in-from-left duration-200'}`}>
         <div className="w-full relative z-20">
           <button
             onClick={() => setShowColorPicker(!showColorPicker)}
-            className="w-full flex items-center justify-center p-3 rounded-full hover:bg-rose-600 bg-black text-white cursor-pointer transition-all shadow-md hover:shadow-lg font-medium group duration-300 active:scale-95"
+            className={`${horizontal ? 'p-2' : 'p-3'} w-full flex items-center justify-center rounded-full hover:bg-rose-600 bg-black text-white cursor-pointer transition-all shadow-md hover:shadow-lg font-medium group duration-300`}
           >
             <Plus
-              className={`${
-                !showColorPicker ? 'rotate-0' : 'rotate-[135deg]'
-              } w-5 h-5 transition-transform duration-300`}
+              className={`
+              ${!showColorPicker ? 'rotate-0' : 'rotate-[135deg]'} 
+                w-5 h-5 transition-transform duration-300`}
             />
           </button>
         </div>
 
         {showColorPicker && (
-          <div className="flex flex-col items-center -mt-1 z-10 gooey">
+          <div className={`flex ${horizontal ? 'flex-row -ml-1' : 'flex-col -mt-1'} items-center z-10 gooey`}>
             {colors.map((colorItem, index) => (
               <ColorButton
                 key={colorItem.id}

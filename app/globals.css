@@ -9,6 +9,7 @@ html,
 body, 
 :root {
   height: 100%;
+  scroll-behavior: smooth;
 }
 
 @theme inline {
@@ -156,34 +157,62 @@ body {
   font-family: var(--font-inter);
 }
 
-/* ::-webkit-scrollbar {
-  width: 5px;;
-}
-::-webkit-scrollbar-thumb {
-  background-color: rosybrown;
-  border-radius: 9999px;
-}
-:hover::-webkit-scrollbar-thumb {
-  background-color: rgba(188, 143, 143, 0.699);
-} */
-
-::-webkit-scrollbar {
-  width: 0.25rem;
-}
-
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--tt-scrollbar-color) transparent;
+  scrollbar-color: transparent transparent;
 }
 
-::-webkit-scrollbar-thumb {
-  background-color: var(--tt-scrollbar-color);
-  border-radius: 9999px;
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 9999px;
+  transition: background-color 0.12s ease;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.08);
+  transition: background-color 0.3s ease;
+}
+
+*:hover::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+  transition: background-color 0.15s ease;
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+.dark *:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.dark *:hover::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.dark *::-webkit-scrollbar-thumb:active {
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Firefox - subtle colors */
+*:hover {
+  scrollbar-color: rgba(0, 0, 0, 0.08) transparent;
+  transition: scrollbar-color 0.3s ease;
+}
+
+.dark *:hover {
+  scrollbar-color: rgba(255, 255, 255, 0.06) transparent;
+}
+
 
 @layer components {
   .form-inputs {
@@ -226,76 +255,6 @@ body {
     [&_div:focus-within_h4]:font-semibold;
   }
 }
-
-/* @theme {
-  --color-background: oklch(100% 0 0); 
-  --color-foreground: oklch(18% 0.007 22.78); 
-  --color-card: oklch(100% 0 0);
-  --color-card-foreground: oklch(18% 0.007 22.78);
-  --color-popover: oklch(100% 0 0);
-  --color-popover-foreground: oklch(18% 0.007 22.78);
-  --color-primary: oklch(68.08% 0.172 22.78);
-  --color-primary-foreground: oklch(98% 0 0);
-  --color-secondary: oklch(88% 0.06 22.78);
-  --color-secondary-foreground: oklch(30% 0.05 22.78);
-  --color-muted: oklch(92% 0.02 22.78);
-  --color-muted-foreground: oklch(55% 0.03 22.78);
-  --color-accent: oklch(80% 0.1 22.78);
-  --color-accent-foreground: oklch(20% 0.05 22.78);
-  --color-destructive: oklch(60% 0.25 25); 
-  --color-destructive-foreground: oklch(98% 0 0);
-  --color-border: oklch(85% 0.03 22.78);
-  --color-input: oklch(85% 0.03 22.78);
-  --color-ring: oklch(30% 0.05 22.78);
-  --radius-default: 0.5rem;
-} */
-
-/* 
-@theme {
-  --color-background: oklch(100% 0 0);
-  --color-foreground: oklch(18.26% 0.007 285.75);
-  --color-card: oklch(100% 0 0);
-  --color-card-foreground: oklch(18.26% 0.007 285.75);
-  --color-popover: oklch(100% 0 0);
-  --color-popover-foreground: oklch(18.26% 0.007 285.75);
-  --color-primary: oklch(68.08% 0.172 22.78);
-  --color-primary-foreground: oklch(98.04% 0 0);
-  --color-secondary: oklch(96.08% 0.003 285.75);
-  --color-secondary-foreground: oklch(23.04% 0.011 285.75);
-  --color-muted: oklch(96.08% 0.003 285.75);
-  --color-muted-foreground: oklch(54.12% 0.013 285.75);
-  --color-accent: oklch(96.08% 0.003 285.75);
-  --color-accent-foreground: oklch(23.04% 0.011 285.75);
-  --color-destructive: oklch(62.8% 0.257 29.23);
-  --color-destructive-foreground: oklch(98.04% 0 0);
-  --color-border: oklch(89.84% 0.004 285.75);
-  --color-input: oklch(89.84% 0.004 285.75);
-  --color-ring: oklch(18.26% 0.007 285.75);
-  --radius-default: 0.5rem;
-} */
-
-/* 
-@theme dark {
-  --color-background: oklch(18.26% 0.007 285.75);
-  --color-foreground: oklch(98.04% 0 0);
-  --color-card: oklch(18.26% 0.007 285.75);
-  --color-card-foreground: oklch(98.04% 0 0);
-  --color-popover: oklch(18.26% 0.007 285.75);
-  --color-popover-foreground: oklch(98.04% 0 0);
-  --color-primary: oklch(98.04% 0 0);
-  --color-primary-foreground: oklch(23.04% 0.011 285.75);
-  --color-secondary: oklch(22.42% 0.013 285.75);
-  --color-secondary-foreground: oklch(98.04% 0 0);
-  --color-muted: oklch(22.42% 0.013 285.75);
-  --color-muted-foreground: oklch(65.14% 0.016 285.75);
-  --color-accent: oklch(22.42% 0.013 285.75);
-  --color-accent-foreground: oklch(98.04% 0 0);
-  --color-destructive: oklch(43.18% 0.182 29.23);
-  --color-destructive-foreground: oklch(98.04% 0 0);
-  --color-border: oklch(22.42% 0.013 285.75);
-  --color-input: oklch(22.42% 0.013 285.75);
-  --color-ring: oklch(83.29% 0.013 285.75);
-} */
 
 @keyframes cellDivide {
   0% { transform: translateY(-100%) scaleY(0.3) scaleX(1.1); opacity: 0; }

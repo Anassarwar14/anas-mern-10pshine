@@ -95,7 +95,7 @@ export default function ResetPasswordPage() {
           <p className="text-gray-600 mb-6">This password reset link is invalid or has expired.</p>
           <button
             onClick={() => router.push('/login')}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors"
+            className="cursor-pointer w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors"
           >
             Back to Login
           </button>
