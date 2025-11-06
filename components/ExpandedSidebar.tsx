@@ -573,7 +573,7 @@ export const ExpandedSidebar = ({
                                 <Edit2 className="w-3 h-3" />
                                 Edit
                               </button>
-                              <button onClick={(e) => {e.stopPropagation(); handleDeleteNote(note.id)}} className="flex items-center gap-2 w-full px-3 py-1.5 hover:bg-destructive/10 rounded text-xs text-destructive cursor-pointer">
+                              <button onClick={(e) => {e.stopPropagation(); handleDeleteNote(note.id, note.folderId)}} className="flex items-center gap-2 w-full px-3 py-1.5 hover:bg-destructive/10 rounded text-xs text-destructive cursor-pointer">
                                 <Trash2 className="w-3 h-3" />
                                 Delete
                               </button>

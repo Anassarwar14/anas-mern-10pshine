@@ -47,8 +47,8 @@ body,
 .simple-editor-content {
   max-width: 1200px;
   width: 100%;
-  margin: 10px auto;
-  height: 100%;
+  margin: 10px auto 0px;
+  height: 85vh;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -69,6 +69,14 @@ body,
 @media screen and (max-width: 480px) {
   .simple-editor-content .tiptap.ProseMirror.simple-editor {
     padding: 1rem 1.5rem 30vh;
+  }
+
+  .simple-editor-wrapper{
+    height: 87vh;
+  }
+
+  .simple-editor-content{
+    height: 76vh;
   }
 }
   

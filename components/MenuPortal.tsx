@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 
 type ButtonLike = { current?: HTMLElement | null } | HTMLElement | null;
@@ -22,11 +22,9 @@ export const MenuPortal = ({
   preferRight = true,
 }: MenuPortalProps) => {
   const [root, setRoot] = useState<Element | null>(null);
-  const [pos, setPos] = useState<{ top: number; left: number; placement: "right" | "left" }>({
-    top: 0,
-    left: 0,
-    placement: "right",
-  });
+  const [pos, setPos] = useState<{ top: number; left: number; placement: "right" | "left" } | null>(null);
+  const [isReady, setIsReady] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // helper to get raw HTMLElement whether ref object or element or null
   const getButtonEl = (): HTMLElement | null => {
@@ -42,9 +40,119 @@ export const MenuPortal = ({
     setRoot(el);
   }, [sidebarSelector]);
 
-  // position updater (works both when portal inside sidebarRoot or when attached to body)
+  // Use useLayoutEffect for immediate, synchronous positioning before paint
+  useLayoutEffect(() => {
+    if (!isOpen) {
+      setPos(null);
+      setIsReady(false);
+      return;
+    }
+
+    const btn = getButtonEl();
+    const menuEl = menuRef.current;
+    if (!btn || !menuEl) return;
+
+    const btnRect = btn.getBoundingClientRect();
+    const menuWidth = menuEl.offsetWidth || 220;
+    const menuHeight = menuEl.offsetHeight || 0;
+    const sidebarEl = root;
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    if (sidebarEl) {
+      // Compute coordinates relative to the sidebar root
+      const sidebarRect = sidebarEl.getBoundingClientRect();
+      
+      // Calculate available space on both sides
+      const spaceRight = viewportWidth - btnRect.right;
+      const spaceLeft = btnRect.left;
+      
+      // Determine placement based on available space
+      let placement: "right" | "left";
+      if (preferRight) {
+        placement = spaceRight >= menuWidth + gap ? "right" : "left";
+      } else {
+        placement = spaceLeft >= menuWidth + gap ? "left" : "right";
+      }
+      
+      // Calculate horizontal position
+      let left: number;
+      if (placement === "right") {
+        left = btnRect.right - sidebarRect.left + gap;
+      } else {
+        left = btnRect.left - sidebarRect.left - menuWidth - gap;
+        // Ensure menu doesn't go off left edge
+        if (left < 0) {
+          left = gap;
+        }
+      }
+      
+      // Calculate vertical position
+      let top = btnRect.top - sidebarRect.top;
+      
+      // Check if menu would go below viewport
+      const menuBottom = btnRect.top + menuHeight;
+      if (menuBottom > viewportHeight && btnRect.top > menuHeight) {
+        // Position above button if there's space
+        top = btnRect.bottom - sidebarRect.top - menuHeight;
+      }
+      
+      setPos({ 
+        top: Math.round(top), 
+        left: Math.round(left), 
+        placement 
+      });
+    } else {
+      // Fallback: attach to body with fixed positioning
+      const spaceRight = viewportWidth - btnRect.right;
+      const spaceLeft = btnRect.left;
+      
+      let placement: "right" | "left";
+      if (preferRight) {
+        placement = spaceRight >= menuWidth + gap ? "right" : "left";
+      } else {
+        placement = spaceLeft >= menuWidth + gap ? "left" : "right";
+      }
+      
+      let left: number;
+      if (placement === "right") {
+        left = btnRect.right + gap;
+        // Ensure menu doesn't go off right edge
+        if (left + menuWidth > viewportWidth) {
+          left = viewportWidth - menuWidth - gap;
+        }
+      } else {
+        left = btnRect.left - menuWidth - gap;
+        // Ensure menu doesn't go off left edge
+        if (left < 0) {
+          left = gap;
+        }
+      }
+      
+      // Calculate vertical position
+      let top = btnRect.top;
+      
+      // Check if menu would go below viewport
+      const menuBottom = top + menuHeight;
+      if (menuBottom > viewportHeight && btnRect.top > menuHeight) {
+        // Position above button if there's space
+        top = btnRect.bottom - menuHeight;
+      }
+      
+      setPos({ 
+        top: Math.round(top), 
+        left: Math.round(left), 
+        placement 
+      });
+    }
+
+    setIsReady(true);
+  }, [isOpen, root, buttonRef, gap, preferRight]);
+
+  // Continuous updates for scroll/resize
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !isReady) return;
 
     let raf = 0;
     let mounted = true;
@@ -52,37 +160,85 @@ export const MenuPortal = ({
     const update = () => {
       if (!mounted) return;
       const btn = getButtonEl();
-      if (!btn) return;
+      const menuEl = menuRef.current;
+      if (!btn || !menuEl) return;
 
       const btnRect = btn.getBoundingClientRect();
+      const menuWidth = menuEl.offsetWidth || 220;
+      const menuHeight = menuEl.offsetHeight || 0;
       const sidebarEl = root;
-      const menuFitsRight = (menuWidth = 220) => {
-        // conservative guess; will be verified by measuring later if needed
-        const viewportRight = window.innerWidth;
-        return btnRect.right + gap + menuWidth <= viewportRight;
-      };
+
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
 
       if (sidebarEl) {
-        // Compute coordinates relative to the sidebar root (so portal can be appended inside it and not clipped)
         const sidebarRect = sidebarEl.getBoundingClientRect();
-        // Try to place below the button, to the right by default
-        const defaultLeft = btnRect.right - sidebarRect.left + gap;
-        const defaultTop = btnRect.top - sidebarRect.top - 4;
-
-        // simple flip decision based on viewport space (try to open to right, otherwise left)
-        const placement: "right" | "left" = preferRight ? (menuFitsRight() ? "right" : "left") : (menuFitsRight() ? "left" : "right");
-        const left = placement === "right" ? defaultLeft : btnRect.left - sidebarRect.left - gap;
-        setPos({ top: Math.round(defaultTop), left: Math.round(left), placement });
+        const spaceRight = viewportWidth - btnRect.right;
+        const spaceLeft = btnRect.left;
+        
+        let placement: "right" | "left";
+        if (preferRight) {
+          placement = spaceRight >= menuWidth + gap ? "right" : "left";
+        } else {
+          placement = spaceLeft >= menuWidth + gap ? "left" : "right";
+        }
+        
+        let left: number;
+        if (placement === "right") {
+          left = btnRect.right - sidebarRect.left + gap;
+        } else {
+          left = btnRect.left - sidebarRect.left - menuWidth - gap;
+          if (left < 0) {
+            left = gap;
+          }
+        }
+        
+        let top = btnRect.top - sidebarRect.top;
+        const menuBottom = btnRect.top + menuHeight;
+        if (menuBottom > viewportHeight && btnRect.top > menuHeight) {
+          top = btnRect.bottom - sidebarRect.top - menuHeight;
+        }
+        
+        setPos({ 
+          top: Math.round(top), 
+          left: Math.round(left), 
+          placement 
+        });
       } else {
-        // fallback: attach to body and use fixed positioning (so scroll won't move it unexpectedly)
-        const viewportTop = btnRect.top + window.scrollY + btnRect.height + 4;
-        // flip logic in viewport coordinates
-        const placement: "right" | "left" = preferRight ? (menuFitsRight() ? "right" : "left") : (menuFitsRight() ? "left" : "right");
-        const left =
-          placement === "right"
-            ? Math.round(btnRect.right + window.scrollX + gap)
-            : Math.round(btnRect.left + window.scrollX - gap);
-        setPos({ top: Math.round(viewportTop), left, placement });
+        const spaceRight = viewportWidth - btnRect.right;
+        const spaceLeft = btnRect.left;
+        
+        let placement: "right" | "left";
+        if (preferRight) {
+          placement = spaceRight >= menuWidth + gap ? "right" : "left";
+        } else {
+          placement = spaceLeft >= menuWidth + gap ? "left" : "right";
+        }
+        
+        let left: number;
+        if (placement === "right") {
+          left = btnRect.right + gap;
+          if (left + menuWidth > viewportWidth) {
+            left = viewportWidth - menuWidth - gap;
+          }
+        } else {
+          left = btnRect.left - menuWidth - gap;
+          if (left < 0) {
+            left = gap;
+          }
+        }
+        
+        let top = btnRect.top;
+        const menuBottom = top + menuHeight;
+        if (menuBottom > viewportHeight && btnRect.top > menuHeight) {
+          top = btnRect.bottom - menuHeight;
+        }
+        
+        setPos({ 
+          top: Math.round(top), 
+          left: Math.round(left), 
+          placement 
+        });
       }
     };
 
@@ -90,11 +246,8 @@ export const MenuPortal = ({
       update();
       raf = requestAnimationFrame(tick);
     };
-
-    // initial + continuous updates while open (handles transforms and scrolling)
     tick();
 
-    // also listen to resize/scroll events to be safe
     const passive = { passive: true };
     window.addEventListener("resize", update);
     window.addEventListener("scroll", update, true);
@@ -105,31 +258,35 @@ export const MenuPortal = ({
       window.removeEventListener("resize", update);
       window.removeEventListener("scroll", update, true);
     };
-  }, [isOpen, root, buttonRef, gap, preferRight]);
+  }, [isOpen, isReady, root, buttonRef, gap, preferRight]);
 
   if (!isOpen) return null;
 
   // Determine mount point
   const mountPoint = root ?? document.body;
 
-  // If mounting to body, we'll use fixed positioning; if mounting to sidebar root we use absolute relative to it
+  // Render with opacity 0 until ready, then fade in
   const style: React.CSSProperties =
     mountPoint === document.body
       ? {
           position: "fixed",
-          top: pos.top,
-          left: pos.left,
+          top: pos?.top ?? 0,
+          left: pos?.left ?? 0,
           zIndex: 99999,
+          opacity: isReady && pos ? 1 : 0,
+          transition: 'opacity 0.05s ease-in',
         }
       : {
           position: "absolute",
-          top: pos.top,
-          left: pos.left,
+          top: pos?.top ?? 0,
+          left: pos?.left ?? 0,
           zIndex: 9999,
+          opacity: isReady && pos ? 1 : 0,
+          transition: 'opacity 0.05s ease-in',
         };
 
   return createPortal(
-    <div style={style} className="pointer-events-auto">
+    <div ref={menuRef} style={style} className="pointer-events-auto">
       {children}
     </div>,
     mountPoint

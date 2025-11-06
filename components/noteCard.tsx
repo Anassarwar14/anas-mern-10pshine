@@ -41,6 +41,9 @@ export default function NoteCard({ note, onToggleFavorite, onTogglePin, onDelete
     return lineArray.join("\n").substring(0, 150) + (content.length > 150 ? "..." : "")
   }
 
+  if (!note)
+    return null;
+
   return (
     <Card
       onClick={() => router.push(`/dashboard/${note.id}`)}
@@ -103,7 +106,7 @@ export default function NoteCard({ note, onToggleFavorite, onTogglePin, onDelete
         <div className="flex items-center justify-between pt-2">
           <span className="flex items-center gap-1.5 text-[11px] sm:text-xs text-gray-700 font-medium">
             <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
-            {formatDistanceToNowStrict(new Date(note.updatedAt), { addSuffix: true })}
+            {note.updatedAt && formatDistanceToNowStrict(new Date(note.updatedAt), { addSuffix: true })}
           </span>
 
           <div className="flex gap-0.5 transition-all duration-200">

@@ -24,7 +24,12 @@ export const Sidebar = () => {
     setShowColorPicker(false);
     setActiveMenu("");
     const params = new URLSearchParams();
-    if (color) params.set("color", color);
+    if (color){
+      params.set("color", color);
+    } 
+    else{
+      params.set("color", "#FFE6A7")
+    }
     if (folderId) params.set("folderId", String(folderId));
     router.push(`/dashboard/new${params.toString() ? `?${params}` : ""}`);
     if (isMobile) setIsOpen(false);

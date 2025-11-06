@@ -41,7 +41,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             returnDuration={1.5}
           />
         </div>
-        <main className="flex-1 overflow-y-auto overflow-x-hidden w-full mt-[64px] md:mt-0">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden w-full pt-16 md:pt-0">
           {children}
         </main>
       </div>

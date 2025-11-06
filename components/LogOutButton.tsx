@@ -36,8 +36,7 @@ export default function LogOutButton() {
       size="sm"
       className="w-full flex items-center gap-2 text-white cursor-pointer"
     >
-      <LogOut className="h-4 w-4" />
-      {loading ? <div className='flex items-center gap-x-2'><LoaderCircle className="animate-spin" /> "Logging out..." </div>: "Log out"}
+      {loading ? <div className='flex items-center gap-x-2'><LoaderCircle className="animate-spin" /></div>: <><LogOut className="h-4 w-4" /> Log out </>}
     </Button>
   );
 }

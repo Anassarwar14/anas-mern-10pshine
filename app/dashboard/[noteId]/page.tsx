@@ -1,3 +1,4 @@
+import NoteNotFound from "@/components/NoteNotFound"
 import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor"
 import { cookies } from "next/headers"
 
@@ -36,7 +37,7 @@ export default async function NotePage({ params, searchParams }: NotePageProps) 
   }); 
 
   if (!res.ok) {
-    return <div>Note not found {(await res.json()).message}</div>
+    return <NoteNotFound />
   }
 
   const note = await res.json()

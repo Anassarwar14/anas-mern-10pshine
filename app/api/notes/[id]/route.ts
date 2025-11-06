@@ -154,9 +154,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     let title = "Untitled";
     if(!userTitle){
+      
       const oldExtractedTitle = extractTitle(existingNote.content);
       const newExtractedTitle = extractTitle(noteContent);
       const shouldUpdateTitle = (existingNote.title === oldExtractedTitle);
+      if (shouldUpdateTitle) console.log("Changing title from ", oldExtractedTitle," to ", newExtractedTitle);
       title = shouldUpdateTitle ? newExtractedTitle : existingNote.title
     }
     else{

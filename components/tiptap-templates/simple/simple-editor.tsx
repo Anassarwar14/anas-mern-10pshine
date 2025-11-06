@@ -78,6 +78,7 @@ import { ChevronLeft, ChevronRight, CloudAlert, CloudCheck, CloudUpload } from "
 import { TagSelector } from "@/components/tiptap-ui/tagSelector"
 import { useNotes } from "@/context/notesContext"
 import { lightenColor } from "@/lib/utils"
+import { EditableTitle } from "./EditableTitle"
 
 
 interface SimpleEditorProps {
@@ -101,6 +102,7 @@ const MainToolbarContent = ({
   isMobile,
   saveStatus,
   title,
+  setTitle,
   predefinedTags,
   selectedTags,
   setSelectedTags,
@@ -111,6 +113,7 @@ const MainToolbarContent = ({
   isMobile: boolean
   saveStatus: string
   title: string | undefined
+  setTitle: React.Dispatch<React.SetStateAction<string | undefined>>
   predefinedTags: string[]
   selectedTags: string[]
   setSelectedTags: React.Dispatch<React.SetStateAction<string[]>>
@@ -147,17 +150,18 @@ const MainToolbarContent = ({
   };
 
 
-  React.useEffect(() => {
-    if (!isEditing && el.current && title) {
-      el.current.innerText = title || "Untitled";
-    }
-  }, [title, isEditing]);
+  // React.useEffect(() => {
+  //   if (!isEditing && el.current && title) {
+  //     el.current.innerText = title || "Untitled";
+  //   }
+  // }, [title, isEditing]);
 
   const handleFocus = () => {
     setIsEditing(true);
   };
 
   const handleBlur = (e: any) => {
+    console.log("handle blur called");
     const newTitle = e.target.innerText.trim();
     setIsEditing(false)
     if (newTitle !== title) saveNote(undefined,undefined,newTitle);
@@ -202,34 +206,15 @@ const MainToolbarContent = ({
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         <Spacer />
-        <h2 
-          ref={el} 
-          contentEditable 
-          suppressContentEditableWarning
-          tabIndex={-1}
-          onFocus={handleFocus}
-          onKeyDown={handleKeyDown}
-          onKeyDownCapture={(e) => {
-            if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Backspace"].includes(e.key)) {
-              e.stopPropagation();
-            }
-          }}
-          onBlur={handleBlur} 
-          style={{ fontFamily: 'var(--font-playfair)' }} 
-          className="font-medium text-secondary-foreground tracking-normal hover:bg-primary-foreground/80 focus:bg-primary-foreground/80 rounded px-2 py-1 cursor-text sm:min-w-[120px] sm:max-w-[400px] whitespace-nowrap overflow-hidden text-ellipsis transition-colors focus:outline-none flex-shrink-0"
-        >
-          {title || "Untitled"}
-        </h2>
-        <div className="mx-2 text-xs flex-shrink-0">
-          {saveStatus === 'saving' && (
-            <span className="flex items-center gap-1.5 text-gray-400"><CloudUpload className="w-4 h-4"/> Saving...</span>
-          )}
-          {saveStatus === 'saved' && (
-            <span className="flex items-center gap-1.5 text-green-600"><CloudCheck className="w-4 h-4"/> Saved</span>
-          )}
-          {saveStatus === 'error' && (
-            <span className="flex items-center gap-1.5 text-red-600"><CloudAlert className="w-4 h-4"/> Failed to save</span>
-          )}
+        <EditableTitle 
+          title={title}
+          setTitle={setTitle}
+          saveTitle={(newTitle:string) => saveNote(undefined, undefined, newTitle)}
+        />
+        <div className="min-w-4 text-[10px] flex-shrink-0">
+          {saveStatus === 'saving' && ( <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-50 animate-pulse"><CloudUpload className="w-4 h-4"/><span className="hidden sm:block"> Saving...</span></span> )}
+          {saveStatus === 'saved' && (<span className="flex items-center gap-1.5 text-green-500 dark:text-green-400"><CloudCheck className="w-4 h-4"/><span className="hidden sm:block"> Saved</span></span>)}
+          {saveStatus === 'error' && (<span className="flex items-center gap-1.5 text-red-600 dark:text-red-400"><CloudAlert className="w-4 h-4"/><span className="hidden sm:block"> Failed to save</span></span>)}
         </div>
         <ToolbarGroup className="flex-shrink-0">
           <UndoRedoButton action="undo" />
@@ -362,10 +347,10 @@ export function SimpleEditor({
 }: SimpleEditorProps) {
   const isMobile = useIsMobile()
   const { height } = useWindowSize()
-  const { setQuickNotes } = useNotes()
+  const { setQuickNotes, setFolders } = useNotes()
   const [mobileView, setMobileView] = React.useState<"main" | "highlighter" | "link">("main")
   const [saveStatus, setSaveStatus] = React.useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  const [currentTitle, setCurrentTitle] = React.useState(title || 'Untitled')
+  const [currentTitle, setCurrentTitle] = React.useState(title)
   const [isCreating, setIsCreating] = React.useState(false)
   const [currentNoteId, setCurrentNoteId] = React.useState(noteId)
   const [selectedTags, setSelectedTags] = React.useState<string[]>(initialTags || [])
@@ -401,7 +386,18 @@ export function SimpleEditor({
         if (newNote.title !== "Untitled") {
           setCurrentTitle(newNote.title)
         }
-        setQuickNotes(prev => [...prev, newNote])
+
+        if (newNote.folderId) {
+          setFolders(prevFolders =>
+            prevFolders.map(folder =>
+              folder.id === newNote.folderId
+                ? { ...folder, notes: [...(folder.notes || []), newNote] }
+                : folder
+            )
+          );
+        } else {
+          setQuickNotes(prev => [...prev, newNote]);
+        }
       } catch (error) {
         console.error("Failed to create note:", error)
       } finally {
@@ -432,7 +428,22 @@ export function SimpleEditor({
         if (updatedNote.title && updatedNote.title !== currentTitle) {
           setCurrentTitle(updatedNote.title)
         }
-        setQuickNotes(prev => prev.map(n => (n.id === updatedNote.id ? updatedNote : n)))
+        if (updatedNote.folderId) {
+          setFolders(prevFolders =>
+            prevFolders.map(folder =>
+              folder.id === updatedNote.folderId
+                ? {
+                    ...folder,
+                    notes: folder.notes?.map(note =>
+                      note.id === updatedNote.id ? updatedNote : note
+                    ) || [],
+                  }
+                : folder
+            )
+          );
+        } else {
+          setQuickNotes(prev => prev.map(note => (note.id === updatedNote.id ? updatedNote : note)));
+        }
         setSaveStatus("saved")
         setTimeout(() => setSaveStatus("idle"), 2000)
         console.log("✓ Note saved")
@@ -457,7 +468,6 @@ export function SimpleEditor({
         class: "simple-editor",
       },
       handleKeyDown: (view, event) => {
-      // Ctrl+S (Windows/Linux) or Cmd+S (Mac)
       if ((event.ctrlKey || event.metaKey) && event.key === "s") {
         event.preventDefault() // prevent browser “save page” dialog
         console.log("Manual save triggered ✨")
@@ -581,6 +591,7 @@ export function SimpleEditor({
                 isMobile={isMobile}
                 saveStatus={saveStatus}
                 title={currentTitle}
+                setTitle={setCurrentTitle}
                 predefinedTags={predefinedTags}
                 selectedTags={selectedTags}
                 setSelectedTags={setSelectedTags}

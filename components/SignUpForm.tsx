@@ -56,7 +56,7 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
   return (
     <>
       <main className="min-h-screen flex flex-col md:grid md:grid-cols-3">
-        <section className="hidden md:block col-span-2 p-2 h-full">
+        <section className="hidden md:block col-span-2 p-2 md:h-screen">
           <div className="overflow-hidden relative h-full rounded-3xl p-6">
             <Image 
               className="-z-10 object-cover object-bottom-left" 
@@ -80,20 +80,20 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
             </div>
           </div>
         </section>
-        <section className="flex flex-col items-center justify-between p-6 min-h-screen">
-          <header className="flex gap-2 items-center justify-center">
+        <section className="flex flex-col items-center justify-between gap-10 p-6 py-8 md:h-screen md:overflow-y-auto">
+          <header className="flex gap-2 items-center justify-center flex-shrink-0">
             <div>
              <Image width={32} height={32} src="/favicon.jpg" alt="logo.png"/>
             </div>
             <h3 style={{ fontFamily: 'var(--font-playfair)' }} className="text-rose-900 text-xl">Orris</h3>
           </header>
-          <div className="-my-10 space-y-2">
+          <div className="space-y-2 flex-shrink-0 my-6 md:my-0">
             <h2 className="text-3xl sm:text-4xl text-center">Welcome{mode == 'login' && ' back'}!</h2>
             <p className="text-accent-foreground/40 text-center text-sm">Secure your thoughts and write away.</p>
           </div>
           <form 
             onSubmit={handleSubmit(onSubmit)}
-            className="w-full grid grid-cols-2 gap-4 text-sm text-zinc-600 form-inputs"
+            className="w-full max-w-md grid grid-cols-2 gap-4 text-sm text-zinc-600 form-inputs flex-shrink-0"
           >
             {mode !== 'login' && (
               <>
@@ -182,7 +182,7 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
             </Button>
           </form>
 
-          <footer>
+          <footer className="flex-shrink-0 mt-6 md:mt-0">
             {mode == 'login' ? 
               <p className="text-accent-foreground/40 text-sm">Don't have an account? <Link href="/signup" className="text-primary underline hover:underline-offset-4">Sign Up</Link></p>
               :
@@ -192,7 +192,6 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
         </section>
       </main>
 
-      {/* Forgot Password Modal */}
       <ForgotPasswordModal
         isOpen={showForgotPassword} 
         onClose={() => setShowForgotPassword(false)} 
