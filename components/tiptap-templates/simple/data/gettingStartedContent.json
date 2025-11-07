@@ -1,0 +1,400 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 1,
+        "textAlign": null
+      },
+      "content": [
+        {
+          "text": "Getting started",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "textAlign": null
+      },
+      "content": [
+        {
+          "text": "This is ",
+          "type": "text"
+        },
+        {
+          "text": "your space",
+          "type": "text",
+          "marks": [
+            {
+              "type": "italic"
+            },
+            {
+              "type": "highlight",
+              "attrs": {
+                "color": "var(--tt-color-highlight-red)"
+              }
+            }
+          ]
+        },
+        {
+          "text": " for ideas, tasks, and ",
+          "type": "text"
+        },
+        {
+          "text": "everything ",
+          "type": "text",
+          "marks": [
+            {
+              "type": "underline"
+            }
+          ]
+        },
+        {
+          "text": "in between. Type ",
+          "type": "text"
+        },
+        {
+          "text": "**text**",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": " for ",
+          "type": "text"
+        },
+        {
+          "text": "bold",
+          "type": "text",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "text": " or use ",
+          "type": "text"
+        },
+        {
+          "text": "⌘+B",
+          "type": "text",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "text": ". Everything ",
+          "type": "text"
+        },
+        {
+          "text": "auto-saves",
+          "type": "text",
+          "marks": [
+            {
+              "type": "italic"
+            },
+            {
+              "type": "highlight",
+              "attrs": {
+                "color": "var(--tt-color-highlight-yellow)"
+              }
+            }
+          ]
+        },
+        {
+          "text": " as you write.",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "type": "blockquote",
+      "content": [
+        {
+          "type": "paragraph",
+          "attrs": {
+            "textAlign": null
+          },
+          "content": [
+            {
+              "text": "Create folders from the sidebar, ",
+              "type": "text"
+            },
+            {
+              "text": "drag notes",
+              "type": "text",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "text": " to organize, add ",
+              "type": "text"
+            },
+            {
+              "text": "colors",
+              "type": "text",
+              "marks": [
+                {
+                  "type": "italic"
+                },
+                {
+                  "type": "highlight",
+                  "attrs": {
+                    "color": "var(--tt-color-highlight-blue)"
+                  }
+                }
+              ]
+            },
+            {
+              "text": " ",
+              "type": "text",
+              "marks": [
+                {
+                  "type": "italic"
+                }
+              ]
+            },
+            {
+              "text": "and ",
+              "type": "text"
+            },
+            {
+              "text": "#tags",
+              "type": "text",
+              "marks": [
+                {
+                  "type": "code"
+                }
+              ]
+            },
+            {
+              "text": " to find what you need. Pin important ones to the top. ",
+              "type": "text"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "text": "Undo-Redo as per convenience.",
+              "type": "text"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "textAlign": "left"
+      },
+      "content": [
+        {
+          "text": "Try it yourself, select this text and ",
+          "type": "text"
+        },
+        {
+          "text": "format ",
+          "type": "text",
+          "marks": [
+            {
+              "type": "strike"
+            }
+          ]
+        },
+        {
+          "text": "it with the toolbar above. Add ",
+          "type": "text"
+        },
+        {
+          "text": "links",
+          "type": "text",
+          "marks": [
+            {
+              "type": "link",
+              "attrs": {
+                "rel": "noopener noreferrer nofollow",
+                "href": "https://example.com",
+                "class": null,
+                "target": "_blank"
+              }
+            }
+          ]
+        },
+        {
+          "text": ", upload images, or write code:",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "attrs": {
+        "language": null
+      },
+      "content": [
+        {
+          "text": "const ideas = ['brainstorm', 'capture', 'organize'];",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "attrs": {
+        "alt": "pexels-cottonbro-4778611",
+        "src": "https://mbkxdswzavhnbfnzqtet.supabase.co/storage/v1/object/public/images/d929a9aa-988f-449a-b6ff-6bba7a6ac26b-pexels-cottonbro-4778611.jpg",
+        "title": "pexels-cottonbro-4778611",
+        "width": null,
+        "height": null
+      }
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "textAlign": "left"
+      },
+      "content": [
+        {
+          "text": "Use it for formulas like E=mc",
+          "type": "text"
+        },
+        {
+          "text": "2",
+          "type": "text",
+          "marks": [
+            {
+              "type": "superscript"
+            }
+          ]
+        },
+        {
+          "text": " or chemistry notes like H",
+          "type": "text"
+        },
+        {
+          "text": "2",
+          "type": "text",
+          "marks": [
+            {
+              "type": "subscript"
+            }
+          ]
+        },
+        {
+          "text": "O, whatever fits your workflow.",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 2,
+        "textAlign": "left"
+      },
+      "content": [
+        {
+          "text": "Quick tasks",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "type": "taskList",
+      "content": [
+        {
+          "type": "taskItem",
+          "attrs": {
+            "checked": true
+          },
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "textAlign": "left"
+              },
+              "content": [
+                {
+                  "text": "Explore the editor",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "taskItem",
+          "attrs": {
+            "checked": false
+          },
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "textAlign": "left"
+              },
+              "content": [
+                {
+                  "text": "Create a folder",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "taskItem",
+          "attrs": {
+            "checked": false
+          },
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "textAlign": "left"
+              },
+              "content": [
+                {
+                  "text": "Try formatting text",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "horizontalRule"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "textAlign": "center"
+      },
+      "content": [
+        {
+          "text": "Happy writing! ✨",
+          "type": "text",
+          "marks": [
+            {
+              "type": "italic"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

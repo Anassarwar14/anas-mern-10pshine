@@ -1,20 +1,85 @@
 import { NextRequest, NextResponse } from "next/server";
 import prismadb from "@/lib/prismaDB";
 import { verifyJwt } from "@/lib/jwt";
-import { extractTitle, getEmptyContent, isValidTiptapContent, tiptapToText } from "@/lib/tiptap-utils";
+import { extractTitle, getEmptyContent, isValidTiptapContent, tiptapToText } from "@/lib/tiptapUtils";
 import logger from "@/lib/logger";
 import isEqual from "lodash/isEqual";
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  const startTime = Date.now();
 
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const token = req.cookies.get("token")?.value;
+    if (!token) {
+      logger.warn("Unauthorized request to /api/notes/[id]");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const decoded = verifyJwt(token);
+    const userId = decoded.userId;
+    const noteId = parseInt(id);
+
+    logger.info({ userId, noteId }, "Fetching single note");
+
+    const note = await prismadb.note.findFirst({
+      where: {
+        id: noteId,
+        userId,
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        color: true,
+        folderId: true,
+        isPinned: true,
+        isFavorite: true,
+        isArchived: true,
+        createdAt: true,
+        updatedAt: true,
+        noteTags: {
+          select: {
+            tag: {
+              select: { id: true, name: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!note) {
+      logger.warn({ userId, noteId }, "Note not found");
+      return NextResponse.json({ error: "Note not found" }, { status: 404 });
+    }
+
+    const formattedNote = {
+      ...note,
+      tags: note.noteTags.map((nt) => nt.tag),
+    };
+
+    logger.info({ userId, noteId }, "Fetched note successfully");
+
+    return NextResponse.json(formattedNote);
+  } catch (error) {
+    logger.error({ error }, "Error fetching single note");
+    return NextResponse.json({ error: "Failed to fetch note" }, { status: 500 });
+  }
+}
+
+
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const startTime = Date.now();
+  const { id } = await params;
   try {
     const token = req.cookies.get("token")?.value;
     if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const decoded = verifyJwt(token);
     const userId = decoded.userId;
-    const noteId = parseInt(params.id);
+    const noteId = parseInt(id);
 
     if (isNaN(noteId)) {
       logger.warn({ userId, noteId }, "Invalid note ID received");
@@ -32,6 +97,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       isArchived,
       isFavorite,
       tagNames,
+      userTitle
     } = body;
     
     const existingNote = await prismadb.note.findUnique({
@@ -84,18 +150,35 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     logger.info({ userId, noteId, folderId }, "Starting note update");
 
     const noteContent = content && isValidTiptapContent(content) ? content : getEmptyContent();
-    const title = extractTitle(noteContent);
     const plainText = tiptapToText(noteContent);
+
+    let title = "Untitled";
+    if(!userTitle){
+      
+      const oldExtractedTitle = extractTitle(existingNote.content);
+      const newExtractedTitle = extractTitle(noteContent);
+      const shouldUpdateTitle = (existingNote.title === oldExtractedTitle);
+      if (shouldUpdateTitle) console.log("Changing title from ", oldExtractedTitle," to ", newExtractedTitle);
+      title = shouldUpdateTitle ? newExtractedTitle : existingNote.title
+    }
+    else{
+      title = userTitle ? userTitle : extractTitle(noteContent);
+    }
 
     let connectTags: { tagId: number }[] = [];
     if (Array.isArray(tagNames)) {
       connectTags = await Promise.all(
         tagNames.map(async (name: string) => {
-          const tag = await prismadb.tag.upsert({
-            where: { name },
-            update: {},
-            create: { name, userId },
+          let tag = await prismadb.tag.findFirst({
+            where: { name, userId },
           });
+
+          if (!tag) {
+            tag = await prismadb.tag.create({
+              data: { name, userId },
+            });
+          }
+
           return { tagId: tag.id };
         })
       );
@@ -234,16 +317,17 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = req.cookies.get("token")?.value;
     if (!token)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const decoded = verifyJwt(token);
     const userId = decoded.userId;
-    const noteId = parseInt(params.id);
+    const noteId = parseInt(id);
 
     if (isNaN(noteId))
       return NextResponse.json({ error: "Invalid note ID" }, { status: 400 });

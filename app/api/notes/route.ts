@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prismadb from '@/lib/prismaDB';
-import { tiptapToText, extractTitle, isValidTiptapContent, getEmptyContent } from '@/lib/tiptap-utils';
+import { tiptapToText, extractTitle, isValidTiptapContent, getEmptyContent } from '@/lib/tiptapUtils';
 import { verifyJwt } from '@/lib/jwt';
 import logger from '@/lib/logger';
 
@@ -96,22 +96,26 @@ export async function POST(req: NextRequest) {
     const decoded = verifyJwt(token);
     const userId = decoded.userId;
 
-    const { folderId, color, content, imageURLs, tagNames } = await req.json();
+    const { folderId, color, content, imageURLs, tagNames, userTitle } = await req.json();
     logger.info({ userId, folderId }, "Creating new note");
 
     const noteContent = content && isValidTiptapContent(content) ? content : getEmptyContent();
-    const title = extractTitle(noteContent);
+    const title = userTitle ? userTitle : extractTitle(noteContent);
     const plainText = tiptapToText(noteContent);
 
     let connectTags: { tagId: number }[] = [];
     if (Array.isArray(tagNames) && tagNames.length > 0) {
       connectTags = await Promise.all(
         tagNames.map(async (name: string) => {
-          const tag = await prismadb.tag.upsert({
-            where: { name },
-            update: {},
-            create: { name, userId },
+          let tag = await prismadb.tag.findFirst({
+            where: { name, userId },
           });
+          
+          if (!tag) {
+            tag = await prismadb.tag.create({
+              data: { name, userId },
+            });
+          }
           return { tagId: tag.id };
         })
       );
@@ -125,6 +129,7 @@ export async function POST(req: NextRequest) {
 
     const nextOrder = (lastNote?.order ?? 0) + 1;
 
+    logger.info({userId, folderId, title, noteContent, plainText, color, nextOrder, imageURLs }, "Creating new note");
     const note = await prismadb.note.create({
       data: {
         userId,

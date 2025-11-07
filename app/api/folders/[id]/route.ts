@@ -5,8 +5,9 @@ import logger from "@/lib/logger";
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const startTime = Date.now();
   try {
     const token = req.cookies.get("token")?.value;
@@ -18,7 +19,7 @@ export async function PATCH(
     const decoded = verifyJwt(token);
     const userId = decoded.userId;
 
-    const folderId = parseInt(params.id);
+    const folderId = parseInt(id);
     if (Number.isNaN(folderId)) {
       logger.warn({ userId, folderId }, "Invalid folder id");
       return NextResponse.json({ error: "Invalid folder id" }, { status: 400 });
@@ -107,8 +108,9 @@ export async function PATCH(
 }
 
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const startTime = Date.now();
+  const { id } = await params;
   try {
     const token = req.cookies.get("token")?.value;
     if (!token) {
@@ -119,13 +121,13 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const decoded = verifyJwt(token);
     const userId = decoded.userId;
 
-    const folderId = parseInt(params.id);
+    const folderId = parseInt(id);
     if (isNaN(folderId)) {
       logger.warn({ userId, folderId }, "Invalid folder ID for delete");
       return NextResponse.json({ error: "Invalid folder ID" }, { status: 400 });
     }
 
-    const folder = await prismadb.folder.findUnique({
+    const folder = await prismadb.folder.findFirst({
       where: { id: folderId, userId },
     });
 
@@ -136,7 +138,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
     await prismadb.$transaction(async (tx) => {
       await tx.folder.delete({ where: { id: folderId } });
-
       await tx.folder.updateMany({
         where: {
           userId,

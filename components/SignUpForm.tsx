@@ -6,6 +6,8 @@ import { Button } from "./ui/button";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import ForgotPasswordModal from "./ForgotPasswordModal";
+import { LoaderCircle } from "lucide-react";
 
 interface SignUpFormProps {
     mode: String
@@ -24,12 +26,13 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
   const router = useRouter(); 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>()
   const [serverError, setServerError] = useState('')
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
 
   const onSubmit = async (data: FormData) => {
     setServerError('')
     
     try {
-      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/signup'
+      const endpoint = mode === 'login' ? `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/login` : `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/signup`
       
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -51,8 +54,9 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
   }
 
   return (
-    <main className="h-full sm:grid grid-cols-3">
-      <section className="hidden md:block col-span-2 p-2 h-full">
+    <>
+      <main className="min-h-screen flex flex-col md:grid md:grid-cols-3">
+        <section className="hidden md:block col-span-2 p-2 md:h-screen">
           <div className="overflow-hidden relative h-full rounded-3xl p-6">
             <Image 
               className="-z-10 object-cover object-bottom-left" 
@@ -76,20 +80,20 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
             </div>
           </div>
         </section>
-        <section className="flex flex-col items-center justify-between p-6">
-          <header className="flex gap-2 items-center justify-center">
+        <section className="flex flex-col items-center justify-between gap-10 p-6 py-8 md:h-screen md:overflow-y-auto">
+          <header className="flex gap-2 items-center justify-center flex-shrink-0">
             <div>
              <Image width={32} height={32} src="/favicon.jpg" alt="logo.png"/>
             </div>
             <h3 style={{ fontFamily: 'var(--font-playfair)' }} className="text-rose-900 text-xl">Orris</h3>
           </header>
-          <div className="-my-10 space-y-2">
-            <h2 className="text-4xl text-center">Welcome{mode == 'login' && ' back'}!</h2>
+          <div className="space-y-2 flex-shrink-0 my-6 md:my-0">
+            <h2 className="text-3xl sm:text-4xl text-center">Welcome{mode == 'login' && ' back'}!</h2>
             <p className="text-accent-foreground/40 text-center text-sm">Secure your thoughts and write away.</p>
           </div>
           <form 
             onSubmit={handleSubmit(onSubmit)}
-            className="w-full grid grid-cols-2 gap-4 text-sm text-zinc-600 form-inputs"
+            className="w-full max-w-md grid grid-cols-2 gap-4 text-sm text-zinc-600 form-inputs flex-shrink-0"
           >
             {mode !== 'login' && (
               <>
@@ -138,7 +142,18 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
             </div>
             
             <div className="col-span-2">
-              <h4>Password</h4>
+              <div className="flex items-center justify-between mb-2">
+                <h4>Password</h4>
+                {mode === 'login' && (
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="cursor-pointer text-xs text-rose-700 hover:text-rose-800 hover:underline transition-colors"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
               <input 
                 placeholder="********"
                 type="password" 
@@ -162,12 +177,12 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
               </div>
             )}
             
-            <Button className="col-span-2" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Loading...' : mode === 'login' ? 'Login' : 'Sign Up'}
+            <Button className="col-span-2 rounded-lg mt-1 cursor-pointer" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? <LoaderCircle className="animate-spin" /> : mode === 'login' ? 'Login' : 'Sign Up'}
             </Button>
           </form>
 
-          <footer>
+          <footer className="flex-shrink-0 mt-6 md:mt-0">
             {mode == 'login' ? 
               <p className="text-accent-foreground/40 text-sm">Don't have an account? <Link href="/signup" className="text-primary underline hover:underline-offset-4">Sign Up</Link></p>
               :
@@ -175,7 +190,13 @@ const SignUpForm = ({ mode }: SignUpFormProps) => {
             }
           </footer>
         </section>
-    </main>
+      </main>
+
+      <ForgotPasswordModal
+        isOpen={showForgotPassword} 
+        onClose={() => setShowForgotPassword(false)} 
+      />
+    </>
   )
 }
 

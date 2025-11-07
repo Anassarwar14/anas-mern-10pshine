@@ -1,283 +1,184 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react";
+import { useNotes } from "@/context/notesContext";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { SidebarHeader } from "./SidebarHeader";
 import { ExpandedSidebar } from "./ExpandedSidebar";
 import CollapsedSidebar from "./CollapsedSidebar";
+import ProfilePopover from "./ProfilePopover";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Menu } from "lucide-react";
+import Image from "next/image";
 
 export const Sidebar = () => {
-  const [expandedFolders, setExpandedFolders] = useState<Record<number, boolean>>({});
-  const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
+  const router = useRouter();
+  const isMobile = useIsMobile(); 
+  const { folders, quickNotes, setFolders, setQuickNotes } = useNotes();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [showColorPicker, setShowColorPicker] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(true);
-  const [myNotesExpanded, setMyNotesExpanded] = useState<boolean>(true);
-  const [foldersExpanded, setFoldersExpanded] = useState<boolean>(true);
-  const [draggedItem, setDraggedItem] = useState<any>(null);
-  
-  const colors = [
-    { name: "Blush Pink", value: "#F7A8B8" },
-    { name: "Soft Mint", value: "#A8E6CF" },
-    { name: "Sky Blue", value: "#A9DEF9" },
-    { name: "Lavender", value: "#CABBE9" },
-    { name: "Golden Mist", value: "#FFE6A7" },
-    { name: "Coral Sunset", value: "#FF9B85" },
-  ];
+  const [isOpen, setIsOpen] = useState(false);
 
-  const [folders, setFolders] = useState([
-    {
-      id: 1,
-      name: 'Work Projects',
-      notes: [
-        { id: 1, title: 'Meeting Notes', color: 'bg-yellow-200' },
-        { id: 2, title: 'Project Ideas', color: 'bg-blue-200' }
-      ]
-    },
-    {
-      id: 2,
-      name: 'Personal',
-      notes: [
-        { id: 3, title: 'Shopping List', color: 'bg-green-200' },
-        { id: 4, title: 'Book Ideas', color: 'bg-pink-200' }
-      ]
-    },
-    {
-      id: 3,
-      name: 'Study',
-      notes: [
-        { id: 5, title: 'Math Notes', color: 'bg-purple-200' }
-      ]
-    }
-  ]);
-
-  const [quickNotes, setQuickNotes] = useState([
-    { id: 6, title: 'Quick Thoughts', color: 'bg-orange-200' },
-    { id: 7, title: 'Daily Journal', color: 'bg-yellow-200' }
-  ]);
-
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (activeMenu) {
-        setActiveMenu(null);
-      }
-    };
-
-    if (activeMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [activeMenu]);
-
-
-  const handleNewNote = (color: string) => {
+  const handleNewNote = (color?: string, folderId?: number) => {
     setShowColorPicker(false);
-    // further logic to be implemented
-  };
-
-  const toggleMenu = (id: string) => {
-    setActiveMenu(activeMenu === id ? null : id);
-  };
-
-  const toggleMyNotes = () => {
-    setMyNotesExpanded(prev => !prev);
-  };
-
-  const toggleFoldersSection = () => {
-    setFoldersExpanded(prev => !prev);
-  };
-
-  const toggleFolder = (folderId: number) => {
-    setExpandedFolders(prev => ({
-      ...prev,
-      [folderId]: !prev[folderId]
-    }));
-  };
-
-  const handleDragStart = (e: React.DragEvent, item: any, type: string, sourceFolderId?: number) => {
-    const draggedData = { ...item, type, sourceFolderId };
-    setDraggedItem(draggedData);
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', JSON.stringify(draggedData));
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDrop = (e: React.DragEvent, targetFolderId: number | null, targetType: string, targetItemId?: number) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!draggedItem) return;
-
-    // Handle folder reordering
-    if (draggedItem.type === 'folder' && targetType === 'folder' && targetFolderId !== null) {
-      if (draggedItem.id === targetFolderId) {
-        setDraggedItem(null);
-        return;
-      }
-
-      setFolders(prev => {
-        const draggedIndex = prev.findIndex(f => f.id === draggedItem.id);
-        const targetIndex = prev.findIndex(f => f.id === targetFolderId);
-        
-        if (draggedIndex === -1 || targetIndex === -1) return prev;
-
-        const newFolders = [...prev];
-        const [removed] = newFolders.splice(draggedIndex, 1);
-        newFolders.splice(targetIndex, 0, removed);
-        
-        return newFolders;
-      });
-
-      setDraggedItem(null);
-      return;
+    setActiveMenu("");
+    const params = new URLSearchParams();
+    if (color){
+      params.set("color", color);
+    } 
+    else{
+      params.set("color", "#FFE6A7")
     }
-
-    // Handle note reordering within same location
-    if ((draggedItem.type === 'quick' || draggedItem.type === 'note') && targetItemId) {
-      // Reordering within quick notes
-      if (draggedItem.type === 'quick' && (targetType === 'quick' || targetFolderId === null)) {
-        setQuickNotes(prev => {
-          const draggedIndex = prev.findIndex(n => n.id === draggedItem.id);
-          const targetIndex = prev.findIndex(n => n.id === targetItemId);
-          
-          if (draggedIndex === -1 || targetIndex === -1) return prev;
-
-          const newNotes = [...prev];
-          const [removed] = newNotes.splice(draggedIndex, 1);
-          newNotes.splice(targetIndex, 0, removed);
-          
-          return newNotes;
-        });
-
-        setDraggedItem(null);
-        return;
-      }
-
-      // Reordering within same folder
-      if (draggedItem.type === 'note' && draggedItem.sourceFolderId === targetFolderId && targetType === 'note') {
-        setFolders(prev => prev.map(folder => {
-          if (folder.id === targetFolderId) {
-            const draggedIndex = folder.notes.findIndex(n => n.id === draggedItem.id);
-            const targetIndex = folder.notes.findIndex(n => n.id === targetItemId);
-            
-            if (draggedIndex === -1 || targetIndex === -1) return folder;
-
-            const newNotes = [...folder.notes];
-            const [removed] = newNotes.splice(draggedIndex, 1);
-            newNotes.splice(targetIndex, 0, removed);
-            
-            return { ...folder, notes: newNotes };
-          }
-          return folder;
-        }));
-
-        setDraggedItem(null);
-        return;
-      }
-    }
-
-    // Handle note drops (moving between different locations)
-    if (draggedItem.type === 'quick' || draggedItem.type === 'note') {
-      const note = draggedItem;
-
-      // Check if moving to different location
-      const movingToDifferentLocation = 
-        (draggedItem.type === 'quick' && targetType !== 'quick' && targetFolderId !== null) ||
-        (draggedItem.type === 'note' && draggedItem.sourceFolderId !== targetFolderId);
-
-      if (!movingToDifferentLocation && !targetItemId) {
-        setDraggedItem(null);
-        return;
-      }
-
-      // Remove note from source
-      if (draggedItem.type === 'quick') {
-        setQuickNotes(prev => prev.filter(n => n.id !== note.id));
-      } else if (draggedItem.sourceFolderId) {
-        setFolders(prev => prev.map(f => 
-          f.id === draggedItem.sourceFolderId 
-            ? { ...f, notes: f.notes.filter(n => n.id !== note.id) }
-            : f
-        ));
-      }
-
-      // Add note to target
-      if (targetType === 'quick' || targetFolderId === null) {
-        setQuickNotes(prev => [...prev, { id: note.id, title: note.title, color: note.color }]);
-      } else if (targetType === 'folder' || targetType === 'note') {
-        setFolders(prev => prev.map(f => 
-          f.id === targetFolderId 
-            ? { ...f, notes: [...f.notes, { id: note.id, title: note.title, color: note.color }] }
-            : f
-        ));
-      }
-    }
-
-    setDraggedItem(null);
+    if (folderId) params.set("folderId", String(folderId));
+    router.push(`/dashboard/new${params.toString() ? `?${params}` : ""}`);
+    if (isMobile) setIsOpen(false);
   };
-  
-  const totalNotes = quickNotes.length + folders.reduce((sum, f) => sum + f.notes.length, 0);
+
+  const toggleSidebar = () => {
+    if (isMobile) {
+      setIsOpen(!isOpen);
+    } else {
+      setSidebarCollapsed(!sidebarCollapsed);
+    }
+  };
+
+  const totalNotes =
+    quickNotes.length +
+    folders?.reduce((sum, f) => sum + (f.notes?.length || 0), 0);
+
+  // Mobile Navbar
+  if (isMobile) {
+    return (
+      <>
+        <nav className="absolute top-0 left-0 right-0 z-40 bg-slate-50 dark:bg-primary-foreground border-b border-gray-200 dark:border-zinc-800 px-2 py-1 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleSidebar}
+              className="p-2 hover:bg-accent/40 rounded-lg transition-colors"
+              aria-label="Open menu"
+            >
+              <Menu className="w-5 h-5 text-gray-800 dark:text-gray-500" />
+            </button>
+
+            <header
+              onClick={() => router.push("/dashboard")}
+              className="cursor-pointer flex gap-x-2 items-center"
+            >
+              <Image width={28} height={28} src="/favicon.jpg" alt="logo" />
+              <h3
+                style={{ fontFamily: "var(--font-playfair)" }}
+                className="text-rose-900 dark:text-rose-600 font-semibold text-lg"
+              >
+                Orris
+              </h3>
+            </header>
+          </div>
+          <ProfilePopover sidebarCollapsed={true} isInNavbar={true} />
+        </nav>
+
+        {isOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-40 animate-in fade-in duration-200"
+            onClick={() => setIsOpen(false)}
+          />
+        )}
+
+        {/* Mobile Drawer */}
+        <aside
+          className={`sidebar-container fixed inset-y-0 left-0 w-66 bg-slate-50 dark:bg-primary-foreground border-r border-gray-200 dark:border-zinc-800 z-50 flex flex-col transform transition-transform duration-300 ease-out ${
+            isOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <SidebarHeader
+            sidebarCollapsed={false}
+            isOpen={isOpen}
+            toggleSidebar={toggleSidebar}
+            isMobile={isMobile}
+          />
+
+          <div className="flex-1 overflow-y-auto overflow-x-hidden">
+            <div className="p-3 space-y-6">
+              <ExpandedSidebar
+                showColorPicker={showColorPicker}
+                setShowColorPicker={setShowColorPicker}
+                handleNewNote={handleNewNote}
+                quickNotes={quickNotes}
+                folders={folders}
+                activeMenu={activeMenu}
+                setActiveMenu={setActiveMenu}
+                setFolders={setFolders}
+                setQuickNotes={setQuickNotes}
+              />
+            </div>
+          </div>
+
+          <div className="flex-shrink-0 p-4 border-t border-border/40 bg-card/50 backdrop-blur-sm">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>{totalNotes} Notes</span>
+              <span>{folders.length} Folders</span>
+            </div>
+          </div>
+        </aside>
+      </>
+    );
+  }
 
   return (
-    <div className={`${sidebarCollapsed ? 'w-16' : 'w-66'} bg-slate-50 border-r border-gray-200 transition-all duration-200 flex flex-col relative`}>
-      <div className="absolute top-10 right-4 w-16 h-16 border-2 border-rose-900/20 rounded-full opacity-30"></div>
-      <div className="absolute top-40 left-3 w-10 h-10 border-2 border-rose-900/5 rotate-45"></div>
-      <div className="absolute bottom-20 right-6 w-20 h-20 border-2 border-slate-400/10 rounded-lg rotate-12"></div>
-      <div className="absolute top-2/5 right-4 w-8 h-8 bg-rose-400/5 rounded-full"></div>
-      
-      <SidebarHeader
-        sidebarCollapsed={sidebarCollapsed}
-        setSidebarCollapsed={setSidebarCollapsed}
-      />
-
-      <div className={`space-y-6 relative z-10 opacity-0 transition ease-in-out duration-700 ${!sidebarCollapsed ? 'opacity-100 flex-1 p-3' : 'p-0'}`}>
-        {!sidebarCollapsed && (
-          <ExpandedSidebar
-            showColorPicker={showColorPicker}
-            setShowColorPicker={setShowColorPicker}
-            handleNewNote={handleNewNote}
-            quickNotes={quickNotes}
-            folders={folders}
-            expandedFolders={expandedFolders}
-            toggleFolder={toggleFolder}
-            activeMenu={activeMenu}
-            toggleMenu={toggleMenu}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            draggedItem={draggedItem}
-            myNotesExpanded={myNotesExpanded}
-            foldersExpanded={foldersExpanded}
-            toggleMyNotes={toggleMyNotes}
-            toggleFoldersSection={toggleFoldersSection}
-          />
-        )}
-      </div>
-      
-      <div className={`flex-1 p-3 relative z-10 opacity-0 transition ease-in-out duration-700 ${sidebarCollapsed && 'opacity-100'}`}>
-        {sidebarCollapsed && (    
-          <CollapsedSidebar
-            showColorPicker={showColorPicker}
-            setShowColorPicker={setShowColorPicker}
-            handleNewNote={handleNewNote}
-          />
-        )}
+    <aside
+      style={{ willChange: 'width' }}
+      className={`sidebar-container bg-slate-50 dark:bg-primary-foreground dark:border-zinc-800 border-r border-gray-200 flex flex-col h-screen relative z-50 flex-shrink-0 transition-[width] duration-500 ${
+        sidebarCollapsed ? "w-16" : "w-66"
+      }`}
+    >
+      <div className="flex-shrink-0">
+        <SidebarHeader
+          sidebarCollapsed={sidebarCollapsed}
+          isOpen={isOpen}
+          toggleSidebar={toggleSidebar}
+          isMobile={isMobile}
+        />
       </div>
 
-      {!sidebarCollapsed && (
-        <div className="p-4 border-t border-border bg-card/50 backdrop-blur-sm relative z-10">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Total Notes: {totalNotes}</span>
-            <span>{folders.length} Folders</span>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        {!sidebarCollapsed && 
+          <div className="p-3 space-y-6 animate-in fade-in duration-700">
+            <ExpandedSidebar
+              showColorPicker={showColorPicker}
+              setShowColorPicker={setShowColorPicker}
+              handleNewNote={handleNewNote}
+              quickNotes={quickNotes}
+              folders={folders}
+              activeMenu={activeMenu}
+              setActiveMenu={setActiveMenu}
+              setFolders={setFolders}
+              setQuickNotes={setQuickNotes}
+            />
           </div>
-        </div>
-      )}
-    </div>
+        } 
+        
+        {sidebarCollapsed &&
+          <div className="p-3 animate-in fade-in duration-700">
+            <CollapsedSidebar
+              showColorPicker={showColorPicker}
+              setShowColorPicker={setShowColorPicker}
+              handleNewNote={handleNewNote}
+            />
+          </div>
+        }
+      </div>
+
+      <div className="flex-shrink-0">
+        <ProfilePopover sidebarCollapsed={sidebarCollapsed} />
+        {!sidebarCollapsed && (
+          <div className="p-4 border-t border-border/40 bg-card/50 backdrop-blur-sm animate-in fade-in duration-500">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Total Notes: {totalNotes}</span>
+              <span>{folders.length} Folders</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </aside>
   );
 };
