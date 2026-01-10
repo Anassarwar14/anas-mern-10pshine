@@ -1,0 +1,89 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String?
+  bio       String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  folders   Folder[]
+  notes     Note[]
+  tags      Tag[]    @relation("UserTags")
+
+  resetPasswordToken   String?   @unique
+  resetPasswordExpiry  DateTime?
+
+  @@map("users")
+}
+
+model Note {
+  id         Int       @id @default(autoincrement())
+  userId     Int       @map("user_id")
+  folderId   Int?      @map("folder_id")
+  title      String    @default("Untitled")
+  content    Json      @default("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\"}]}")
+  plainText  String?   @map("content_plain_text")
+  color      String    @default("#FFE6A7")
+  order      Int       @default(0)
+  isPinned   Boolean   @default(false) @map("is_pinned")
+  isFavorite Boolean   @default(false) @map("is_favorite")
+  isArchived Boolean   @default(false) @map("is_archived")
+  imageURLs  String[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  noteTags   NoteTag[]
+  folder     Folder?   @relation(fields: [folderId], references: [id])
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, folderId, order])
+  @@index([userId, order])
+  @@map("notes")
+}
+
+model Folder {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  name      String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes     Note[]
+
+  @@index([userId, order])
+  @@map("folders")
+}
+
+model Tag {
+  id       Int       @id @default(autoincrement())
+  name     String
+  userId   Int?
+  noteTags NoteTag[]
+  user     User?     @relation("UserTags", fields: [userId], references: [id])
+
+  @@map("tags")
+}
+
+model NoteTag {
+  noteId Int
+  tagId  Int
+  note   Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([noteId, tagId])
+  @@map("note_tag_relation")
+}

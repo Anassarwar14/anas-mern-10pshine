@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Macondo_Swash_Caps, Montserrat, Playfair_Display, Quicksand, Vibes } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,8 +12,53 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+    subsets: ["latin"]
+})
+
+
+const vibes = Vibes({
+  variable: "--font-vibes",
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+})
+
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+})
+
+
+const quicksand = Quicksand({
+  variable: "--font-quicksand",
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+})
+
+
+const macSC = Macondo_Swash_Caps({
+  variable: "--font-mac",
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+})
+
+
+
+
 export const metadata: Metadata = {
-  title: "Notes App",
+  title: "Orris",
   description: "A Premium Note Taking App with easy-to-use UI",
 };
 
@@ -25,7 +70,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${quicksand.variable} ${playfair.variable} ${vibes.variable} ${macSC.variable} ${montserrat.variable} ${inter.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
       </body>
